@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
+
+    {% if site.google_analytics %}
+      <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ site.google_analytics }}');
+      </script>
+    {% endif %}
+    <meta charset="UTF-8">
+
+	  
+	  
+	  
+{% seo %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+  </head>
+  <body>
+    <header class="page-header" role="banner">
+      <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
+      <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
+	<table align=center width=800px>
+	  <tr>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Michele Svanera</a></span> &#x266B;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Austin Dibble</a></span> &#x266B;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Connor Dalby</a></span> &#x266B;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Michele Sevegnani</a></span> &#9826;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Alessio Fracasso</a></span> &#x266B;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Donald Lyall</a></span> &#x20DD;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Monika Harvey</a></span> &#x266B;
+                  </center>
+                </td>
+          <td align=center width=150px>
+                  <center>
+                      <span style="font-size:18px"><a href="https://www.michelesvanera.org/" target="_blank">Michele Svanera</a></span> &#x266B;
+                  </center>
+                </td>
+      </table><br>
+        <span style="font-size:15px">&#x266B; - Center for Cognitive Neuroimaging, University of Glasgow, UK</span><br>
+        <span style="font-size:15px">&#9826; - School of Computing Science, University of Glasgow, Glasgow, UK</span><br>
+        <span style="font-size:15px">&#x20DD; - School of Health and Wellbeing, University of Glasgow, Glasgow, UK</span><br>
+        <span style="font-size:15px">* - Shared authorship.</span><br>
+        
+  </header>
+        
+	<table align=center width=600px>
+	<tr>
+    <td align=center width=300px>
+        <center>
+        <kbd>
+            <a href="http://segmentation.psy.gla.ac.uk:8503/" target="_blank"><img class="" src = "./misc/demo.png" height="75px"></img></href></a><br>
+        </kbd>
+        </center>
+      </td>
+	<td align=center width=300px>
+		<center>
+		<kbd>
+			<a href="https://github.com/rockNroll87q/NeuroFM" target="_blank"><img class="" src = "./misc/code_2.png" height="70px"></img></href></a><br>
+		</kbd>
+		</center>
+	  </td>
+	<td align=center width=300px>
+		<center>
+		<kbd>
+			<a href="https://doi.org/10.1016/j.media.2024.103090" target="_blank"><img class="" src = "./misc/paper3.png" height="75px"></img></href></a><br>
+		</kbd>
+		</center>
+	  </td>
+    <td align=center width=300px>
+        <center>
+        <kbd>
+            <a href="https://rocknroll87q.github.io/LOD-Brain/dataset" target="_blank"><img class="" src = "./misc/data.png" height="75px"></img></href></a><br>
+        </kbd>
+        </center>
+      </td>
+<!--    <td align=center width=300px>-->
+<!--        <center>-->
+<!--        <kbd>-->
+<!--            <a href="https://rocknroll87q.github.io/LOD-Brain/usage" target="_blank"><img class="" src = "./misc/docker2.png" height="75px"></img></href></a><br>-->
+<!--        </kbd>-->
+<!--        </center>-->
+<!--      </td>-->
+    <td align=center width=300px>
+        <center>
+        <kbd>
+            <a href="https://rocknroll87q.github.io/LOD-Brain/usage" target="_blank"><img class="" src = "./misc/sing.png" height="75px"></img></href></a><br>
+        </kbd>
+        </center>
+      </td>
+
+    </table><br>
+	  
+	  
+	  
+	<hr>
+    <main id="content" class="main-content" role="main">
+      {{ content }}
+
+      <footer class="site-footer">
+        {% if site.github.is_project_page %}
+          <span class="site-footer-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</span>
+        {% endif %}
+      </footer>
+    </main>
+  </body>
+</html>
