@@ -39,35 +39,39 @@ class NetworkConfig(BaseModel):
     Configuration for a NeuroFM model variant.
     All hyperparameters required to reconstruct the architecture exactly
     as trained — do not change these for a given set of pretrained weights.
+
+    Defaults match the training NetConfig from config.py exactly.
     """
 
     # Input
-    shape: tuple[int, int, int] = (182, 218, 182)
+    shape: tuple[int, int, int] = (182, 218, 182)  # fixed MNI152 1mm space
 
     # Encoder
-    conv_block: Literal["Plain", "BottleNeck", "Residual"] = "BottleNeck"
+    conv_block: Literal["Plain", "BottleNeck", "Residual"] = "Plain"
     num_conv_layers: int = 5
-    num_initial_filter: int = 8
-    conv_repetition: int = 1
-    bottleneck_factor: int = 4
+    num_initial_filter: int = 32
+    conv_repetition: int = 2
+    bottleneck_factor: int = 4                  # divide_factor in BottleNeck
     identity_layers: bool = False
-    n_identity_layers: int = 1
-    identity_layer_start: int = 0
+    n_identity_layers: int = 3
+    identity_layer_start: int = 3
     activation: str = "relu"
-    bn: bool = True
+    bn: str = "GN"                              # "BN", "GN", or None
     kernel_initializer: str = "he_normal"
-    kernel_regularizer: float | None = None
-    dropout_rate: float = 0.2
+    kernel_regularizer: float = 1e-4
+    dropout_rate: float = 0.05
+    downsampling: str = "conv"                  # "conv" or "pooling"
+    stride: int = 2
     use_se: bool = False
-    se_ratio: int = 16
+    se_ratio: float = 1.0
 
     # Pooling / bridge to neck
     final_stage: Literal["dense", "avgPool"] = "avgPool"
-    num_dense_layers: int = 2                   # only used if final_stage == 'dense'
+    num_dense_layers: int = 3                   # only used if final_stage == 'dense'
 
     # Neck
-    num_neck_layers: int = 2
-    neck_layer_size: int = 256
+    num_neck_layers: int = 0
+    neck_layer_size: int = 512
 
     # Output head
     num_classes: list[int] = [1, 1, 1, 1]       # one per predicted variable
@@ -76,7 +80,7 @@ class NetworkConfig(BaseModel):
     ]
     dense_predictors: bool = False
     num_dense_predictor_layers: int = 1
-    dense_predictor_size: int = 64
+    dense_predictor_size: int = 128
 
 
 # ---------------------------------------------------------------------------
@@ -87,26 +91,23 @@ class NetworkConfig(BaseModel):
 
 VARIANT_CONFIGS: dict[str, NetworkConfig] = {
     "neurofm-s": NetworkConfig(
-        num_conv_layers=4,
-        num_initial_filter=8,
-        neck_layer_size=161,
-        num_neck_layers=2,
+        num_conv_layers=5,
+        num_initial_filter=32,
+        num_neck_layers=0,
     ),
     "neurofm-m": NetworkConfig(
-        num_conv_layers=5,
-        num_initial_filter=16,
+        num_conv_layers=7,
+        num_initial_filter=32,
         neck_layer_size=256,
-        num_neck_layers=3,
+        num_neck_layers=2,
     ),
     "neurofm-l": NetworkConfig(
-        num_conv_layers=6,
-        num_initial_filter=16,
+        num_conv_layers=8,
+        num_initial_filter=32,
         neck_layer_size=512,
-        num_neck_layers=3,
-        use_se=True,
+        num_neck_layers=2,
     ),
 }
-
 
 # ---------------------------------------------------------------------------
 # Custom objects — required for loading saved .h5 models
@@ -221,7 +222,6 @@ def _build_encoder_layers(config: NetworkConfig, x):
 
             for r in range(n_identity):
                 x = add_conv_layer(
-                    config,
                     config.conv_block,
                     x,
                     filter_num=config.num_initial_filter * filter_mult,
@@ -235,7 +235,8 @@ def _build_encoder_layers(config: NetworkConfig, x):
                     dropout_rate=config.dropout_rate,
                     use_se=config.use_se,
                     se_ratio=config.se_ratio,
-                    stride=1 if r < n_identity - 1 else 2,
+                    downsampling=config.downsampling,
+                    stride=1 if r < n_identity - 1 else config.stride,
                     name=f"enc_conv_{f + 1}_{r + 1}",
                 )
     return x

@@ -9,11 +9,13 @@ import numpy as np
 import tensorflow as tf
 
 from .weights import get_weights_path, VARIANTS, DEFAULT_VARIANT
+from .model import load_neurofm
 from .io import load_and_preprocess
 
 VALID_OUTPUTS = {"brain_health", "latent"}
 BRAIN_HEALTH_KEYS = ["brain_age", "brain_volume", "ventricle_volume", "sex"]
 LATENT_LAYER_NAME = "multihead_output"
+
 
 class NeuroFM:
     """
@@ -66,7 +68,7 @@ class NeuroFM:
             cache_dir=cache_dir,
             local_path=weights,
         )
-        self._model = _load_model(weights_path)
+        self._model = load_neurofm(weights_path, variant=variant)
         self._latent_model = None  # built lazily if latent output is requested
 
         logger.info(
@@ -199,52 +201,6 @@ def _configure_device(device: str) -> None:
 def _active_device() -> str:
     gpus = tf.config.get_visible_devices("GPU")
     return f"GPU ({gpus[0].name})" if gpus else "CPU"
-
-
-# ---------------------------------------------------------------------------
-# Model loading
-# ---------------------------------------------------------------------------
-
-def _load_model(weights_path: str) -> tf.keras.Model:
-    """
-    Load the NeuroFM Keras model from an .h5 weights file.
-
-    TODO: Replace with your actual model architecture instantiation.
-          The model must be defined before weights can be loaded from .h5.
-          Import your architecture from model.py and call model.load_weights().
-    """
-    try:
-        # Option A: full model saved with model.save() — preferred
-        model = tf.keras.models.load_model(weights_path)
-    except Exception:
-        # Option B: weights-only .h5 — requires architecture to be defined first
-        # from .model import build_neurofm
-        # model = build_neurofm(variant=...)
-        # model.load_weights(weights_path)
-        raise RuntimeError(
-            f"Could not load model from {weights_path}. "
-            "See TODO in inference.py — architecture definition required for weights-only .h5."
-        )
-    return model
-
-
-def _build_latent_model(
-    model: tf.keras.Model,
-    layer_name: str,
-) -> tf.keras.Model:
-    """
-    Build a sub-model that outputs the activations of a named intermediate layer.
-    Used to extract latent embeddings without a separate model file.
-    """
-    try:
-        latent_output = model.get_layer(layer_name).output
-    except ValueError:
-        available = [l.name for l in model.layers]
-        raise ValueError(
-            f"Layer '{layer_name}' not found in model. "
-            f"Available layers: {available}"
-        )
-    return tf.keras.Model(inputs=model.input, outputs=latent_output)
 
 
 # ---------------------------------------------------------------------------
