@@ -5,6 +5,7 @@ Variant registry and automatic weight download from HuggingFace.
 Zenodo is the canonical archive for citation; HuggingFace is used
 for programmatic access.
 """
+from __future__ import annotations
 
 import os
 from loguru import logger

@@ -4,6 +4,7 @@ neurofm/io.py
 Input resolution, preprocessing, and output writing.
 Accepts a single file, directory, or CSV with an 'input' column.
 """
+from __future__ import annotations
 
 import os
 from glob import glob

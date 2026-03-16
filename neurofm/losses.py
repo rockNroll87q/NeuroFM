@@ -5,6 +5,7 @@ Loss functions and metrics registry. These dicts are passed to
 get_custom_objects() so TensorFlow can deserialise the model from
 a saved .h5 file that was compiled with these losses during training.
 """
+from __future__ import annotations
 
 import tensorflow as tf
 

@@ -8,6 +8,7 @@ architectures, resume training) has been intentionally stripped. This
 module contains only what is needed to construct the model and load
 pretrained weights.
 """
+from __future__ import annotations
 
 from loguru import logger
 

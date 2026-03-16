@@ -24,6 +24,7 @@ With options:
         --outputs brain_health,latent \\
         --device gpu
 """
+from __future__ import annotations
 
 import argparse
 from loguru import logger

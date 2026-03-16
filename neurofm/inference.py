@@ -3,6 +3,7 @@ neurofm/inference.py
 
 Core inference logic. The NeuroFM class is the primary user-facing API.
 """
+from __future__ import annotations
 
 from loguru import logger
 import numpy as np

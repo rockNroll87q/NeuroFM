@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "neurofm"
@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Foundation model for individualized brain health estimation from T1w MRI."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9,<3.11"
+requires-python = ">=3.8,<3.11"
 authors = [
     { name = "Your Name", email = "you@institution.edu" }
 ]
@@ -27,6 +27,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
 ]
@@ -34,13 +35,12 @@ classifiers = [
 dependencies = [
     "tensorflow==2.13.0",
     "numpy>=1.23.5,<2.0.0",
+    "typing-extensions>=3.6.6,<4.6.0",
     "nibabel>=5.0.0",
     "scipy>=1.10.0",
     "pandas>=2.0.0",
-    "opencv-python>=4.7.0",
-    "huggingface_hub>=0.20.0",
-    "pydantic>=2.0.0",
-    "typeguard>=4.0.0",
+    "huggingface_hub>=0.20.0,<0.24.0",
+    "pydantic>=1.10,<2.0",
     "loguru>=0.7.0",
 ]
 
@@ -54,7 +54,6 @@ notebooks = [
 # Training and augmentation (not required for inference)
 training = [
     "elasticdeform>=0.5.0",
-    "opencv-python>=4.7.0"
 ]
 # Full development environment
 dev = [
@@ -81,11 +80,11 @@ include = ["neurofm*"]
 
 [tool.black]
 line-length = 88
-target-version = ["py39", "py310"]
+target-version = ["py38", "py39"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py38"
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
