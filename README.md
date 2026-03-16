@@ -2,7 +2,7 @@
 
 Repository for the paper "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
 
-> **"[headline statement]"**
+> **[headline statement]**
 
 📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 📦 [Weights (v0.1.0)]() &nbsp;|&nbsp; 🐳 [Docker]() &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/)
 
@@ -14,8 +14,10 @@ NeuroFM takes a T1w MRI scan and produces:
 
 | Output | Description | Format |
 |--------|-------------|--------|
-| `brain_health` | Predicted brain health features (brain age, brain volume (GM+WM), lateral ventricle volume, sex) | floats, `.npy`, or `.csv` |
-| `latent` *(optional)* |  latent embedding (size depends on model variant) | `.npy` array |
+| `brain_health` | Predicted brain health features: brain age, brain volume (GM+WM), lateral ventricle volume, sex | floats, `.npy` or `.csv` |
+| `latent` *(optional)* | Latent embedding (dimension depends on model variant) | `.npy` array |
+
+NeuroFM comes in three sizes. The smallest variant is under 10MB and runs comfortably on CPU; the largest is ~150MB and is intended for GPU use or when maximum accuracy is needed.
 
 ---
 
@@ -40,7 +42,7 @@ pip install -e .
 python scripts/run_inference.py --input /path/to/scan.nii.gz --output /path/to/output/
 ```
 
-That's it. Weights are downloaded automatically (~200MB) on first run and cached to `~/.cache/NeuroFM/`.
+Weights for the default model variant (NeuroFM-S) are downloaded automatically (~10MB) on first run and cached to `~/.cache/NeuroFM/`. Larger variants are downloaded on demand when `--model` is specified.
 
 ---
 
@@ -97,19 +99,26 @@ python scripts/run_inference.py \
     --input subjects.csv \
     --output ./results/
 ```
-
 Your CSV must have an `input` column containing paths to NIfTI files. Any other columns are ignored and passed through to the output summary CSV.
+
+### Select a model variant
+```bash
+python scripts/run_inference.py \
+    --input /data/ \
+    --output ./results/ \
+    --model neurofm-m
+```
+Defaults to `neurofm-s`. Weights for the requested variant are downloaded automatically if not already cached. See [Model Variants](#model-variants) for a full comparison.
 
 ### Select specific outputs
 ```bash
-# Only produce brain_age and latent features
+# Produce brain health estimates and latent features
 python scripts/run_inference.py \
     --input /data/ \
     --output ./results/ \
     --outputs brain_health,latent
 ```
-
-Default is both outputs. Omitting `latent` skips embedding extraction.
+Default produces `brain_health` only. Add `latent` to also extract embeddings.
 
 ### GPU inference
 ```bash
@@ -120,14 +129,25 @@ python scripts/run_inference.py \
 ```
 Defaults to `auto` (uses GPU if available, falls back to CPU). Force CPU with `--device cpu`.
 
+### Full options
+```
+--input          Path to a .nii.gz file, directory, or .csv with an 'input' column
+--output         Output directory
+--model          Model variant: neurofm-s (default), neurofm-m, neurofm-l
+--outputs        Comma-separated list of outputs: brain_health,latent (default: brain_health)
+--device         Device: auto (default), cpu, gpu
+--weights        Path to local weights file (overrides automatic download)
+--batch-size     Number of scans to process in parallel (default: 1)
+```
+
 ### Python API
 ```python
 from neurofm import InferenceEngine
 
-engine = InferenceEngine(device="auto")
+engine = InferenceEngine(model="neurofm-s", device="auto")
 results = engine.predict("subject_01_T1w.nii.gz", outputs=["brain_health", "latent"])
 
-results["brain_health"]  # np.ndarray, shape (4,)
+results["brain_health"]  # np.ndarray, shape (4,) — [brain_age, brain_vol, ventricle_vol, sex]
 results["latent"]        # np.ndarray, shape (D,)
 ```
 
@@ -149,52 +169,66 @@ results["latent"]        # np.ndarray, shape (D,)
 |-----------|-------------|
 | Modality | T1-weighted MRI |
 | Format | NIfTI (`.nii`, `.nii.gz`) |
-| Preprocessing | skull-stripped |
-| Resolution | 1mm isotropic, even if it's not native |
-| Orientation | LIA recommended, though pipeline will attempt to transform it to the right space |
+| Preprocessing | Skull-stripped |
+| Resolution | 1mm isotropic |
+| Orientation | LIA recommended; the pipeline will attempt to reorient automatically |
 
-> **Note on preprocessing:** Currently, no preprocessing is performed by the inference script beyond attempted resolution resampling and LIA transformation. Data is expected to be skull-stripped.
+> **Note on preprocessing:** The inference script performs resolution resampling and attempts LIA reorientation internally. Input data must be skull-stripped prior to inference. Preprocessing utilities will be added in a future release.
 
 ---
 
 ## Outputs
 
 ### Brain health features
-[Description, units, interpretation guidance. What does a "good" output look like?]
 
-| Feature | Description | Unit | value range
-|--------|-------------|--------|--------|
-| `brain age` | Predicted brain age | years | float (40.0 - 90.0) |
-| `brain volume` | Predicted total brain volume (GM+WM) | mm^3 | float (1e6 - 1.9e6) |
-| `ventricle volume` | Predicted lateral ventricle volume | mm^3 | float (0 - 180e3) |
+A 4-element array in the order `[brain_age, brain_volume, ventricle_volume, sex]`.
+
+| Feature | Description | Unit | Range |
+|---------|-------------|------|-------|
+| `brain_age` | Predicted brain age | years | 40.0 – 90.0 |
+| `brain_volume` | Total brain volume (GM+WM) | mm³ | 1×10⁶ – 1.9×10⁶ |
+| `ventricle_volume` | Lateral ventricle volume | mm³ | 0 – 180×10³ |
+| `sex` | Predicted biological sex | — | 0.0 (male) – 1.0 (female) |
 
 ### Latent features
-A D-dimensional embedding representing the brain health representation space encoded by NeuroFM. Useful for downstream classification tasks (e.g., differential diagnosis), regression tasks (e.g. cognition score prediction), unsupervised clustering, etc. Extracted from `multihead_output` layer of the network. The latent dimension size depends on the selected model variant (see [Variants](#model-variants)).
+A D-dimensional embedding representing the brain health representation space learned by NeuroFM. Useful for downstream tasks including differential diagnosis classification, cognitive score regression, and unsupervised cohort clustering. Extracted from the `multihead_output` layer. The embedding dimension D depends on the model variant (see below).
 
 ---
 
 ## Model Variants
 
-| Name | Params | Dimensions |
-|---------|-------|------|
-| NeuroFM-S | 484k | 161 |
-| NeuroFM-M | 6.5M | 256 |
-| NeuroFM-L | 10.8M | 512 |
+| Variant | Params | Latent dim | Weights (.h5) | Use case |
+|---------|--------|------------|---------------|----------|
+| `neurofm-s` | 484k | 161 | ~10MB | Default. Fast CPU inference, large cohorts |
+| `neurofm-m` | 6.5M | 256 | ~44MB | Balanced accuracy/speed |
+| `neurofm-l` | 10.8M | 512 | ~150MB | Maximum accuracy, GPU recommended |
+
+Only the weights for your requested variant are downloaded. All variants are archived on Zenodo; see [Weights & Versioning](#weights--versioning).
 
 ---
 
-## Weights & versioning
+## Weights & Versioning
 
-Model weights are distributed via GitHub Releases and HuggingFace and archived on Zenodo with a citable DOI.
+Weights are hosted on [Zenodo]() (canonical, citable) and mirrored on [HuggingFace]() for programmatic access. They are downloaded automatically on first use per variant — no manual steps required.
 
-| Version | Release | Zenodo DOI | Notes |
-|---------|---------|------------|-------|
-| v0.1.0 | [Link]() | [DOI]() | Initial release |
+| Version | Zenodo DOI | HuggingFace | Notes |
+|---------|------------|-------------|-------|
+| v0.1.0 | [DOI]() | [rocknroll87q/NeuroFM]() | Initial release |
 
-Weights are downloaded automatically on first use. To download manually or specify a local path:
+The auto-download pulls from HuggingFace by default. To use the Zenodo URL instead, or to point to a locally downloaded file:
 ```bash
 python scripts/run_inference.py --input scan.nii.gz --weights /path/to/weights.h5
 ```
+
+For long-term reproducibility and citation in publications, please reference the Zenodo DOI rather than the HuggingFace mirror.
+
+---
+
+## Finetuning
+
+For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as these are smaller and sufficient in most cases. For finetuning, the full saved model directory is available in the TensorFlow structure and can be loaded via the `finetuning` argument. 
+
+For now, finetuning is not officially supported in this repository but may be added at a later date.
 
 ---
 
@@ -207,7 +241,7 @@ python scripts/run_inference.py --input scan.nii.gz --weights /path/to/weights.h
 | GPU | — | NVIDIA, 4GB VRAM |
 | OS | Linux, macOS, Windows | Linux |
 
-GPU is optional but recommended for large cohorts. Single-scan CPU inference takes approximately [X seconds] on a modern laptop.
+GPU is optional but recommended for `neurofm-l` and large cohorts. Approximate CPU inference time per scan: [X sec] (neurofm-s), [X sec] (neurofm-m), [X sec] (neurofm-l).
 
 ---
 
@@ -217,23 +251,26 @@ GPU is optional but recommended for large cohorts. Single-scan CPU inference tak
 ```bash
 python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
 ```
-If empty, check your CUDA/cuDNN versions against the [TF 2.13 compatibility table](https://www.tensorflow.org/install/source#gpu). The Docker/Singularity containers have the correct drivers pre-configured.
+If the list is empty, check your CUDA/cuDNN versions against the [TF 2.13 compatibility table](https://www.tensorflow.org/install/source#gpu). The Docker/Singularity containers have the correct drivers pre-configured and are the easiest path for GPU use.
 
 **Apple Silicon (M1/M2/M3)**
-TF 2.13 does not support MPS acceleration. Use `--device cpu` or use the Docker container. Performance on Apple Silicon CPU is still reasonable for single-scan inference.
+TF 2.13 does not support MPS acceleration. Use `--device cpu` or use the Docker container. `neurofm-s` on Apple Silicon CPU is still fast enough for routine use.
 
 **Out of memory on GPU**
-Reduce batch size with `--batch-size 1`, or use `--device cpu`.
+Switch to a smaller variant (`--model neurofm-s`), use `--device cpu`, or try a smaller batch size.
+
+**Reorientation warnings**
+If your data is in an unusual orientation and automatic reorientation fails, you may get a warning. Results may still be usable but accuracy can degrade — we recommend preprocessing to LIA orientation using `fslreorient2std` or equivalent.
 
 ---
 
 ## Citation
 
-If you use [Model Name] in your research, please cite:
+If you use NeuroFM in your research, please cite:
 
 ```bibtex
-@article{yourname2026modelname,
-  title   = {[Paper title]},
+@article{yourname2026neurofm,
+  title   = {NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation},
   author  = {[Authors]},
   journal = {bioRxiv},
   year    = {2026},
@@ -245,13 +282,13 @@ If you use [Model Name] in your research, please cite:
 
 ## License
 
-[Model Name] is released under the [LICENSE NAME] license. See [LICENSE](./LICENSE) for details.
+NeuroFM is released under the [LICENSE NAME] license. See [LICENSE](./LICENSE) for details.
 
 ---
 
 ## Contributing
 
-This repository is currently in an early-release state accompanying the manuscript. We welcome bug reports and questions via [GitHub Issues](). Broader contributions welcome — please open an issue before submitting a PR.
+This repository is in an early-release state accompanying the manuscript. Bug reports and questions are welcome via [GitHub Issues](). Please open an issue before submitting a pull request.
 
 ---
 
