@@ -181,14 +181,14 @@ results["latent"]        # np.ndarray, shape (D,)
 
 ### Brain health features
 
-A 4-element array in the order `[brain_age, brain_volume, ventricle_volume, sex]`.
-
+A 4-element array in the order `[brain_age, sex, ventricle_volume, brain_volume]`.
+ 
 | Feature | Description | Unit | Range |
 |---------|-------------|------|-------|
 | `brain_age` | Predicted brain age | years | 40.0 – 90.0 |
-| `brain_volume` | Total brain volume (GM+WM) | mm³ | 1×10⁶ – 1.9×10⁶ |
-| `ventricle_volume` | Lateral ventricle volume | mm³ | 0 – 180×10³ |
 | `sex` | Predicted biological sex | — | 0.0 (male) – 1.0 (female) |
+| `ventricle_volume` | Lateral ventricle volume | mm³ | 0 – 180×10³ |
+| `brain_volume` | Total brain volume (GM+WM) | mm³ | 1×10⁶ – 1.9×10⁶ |
 
 ### Latent features
 A D-dimensional embedding representing the brain health representation space learned by NeuroFM. Useful for downstream tasks including differential diagnosis classification, cognitive score regression, and unsupervised cohort clustering. Extracted from the `multihead_output` layer. The embedding dimension D depends on the model variant (see below).

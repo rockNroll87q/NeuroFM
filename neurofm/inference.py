@@ -9,13 +9,12 @@ import numpy as np
 import tensorflow as tf
 
 from .weights import get_weights_path, VARIANTS, DEFAULT_VARIANT
-from .model import load_neurofm
+from .model import load_neurofm, BRAIN_HEALTH_KEYS
 from .io import load_and_preprocess
 
 VALID_OUTPUTS = {"brain_health", "latent"}
-BRAIN_HEALTH_KEYS = ["brain_age", "brain_volume", "ventricle_volume", "sex"]
+# BRAIN_HEALTH_KEYS = ["brain_age", "brain_volume", "ventricle_volume", "sex"]
 LATENT_LAYER_NAME = "multihead_output"
-
 
 class NeuroFM:
     """
@@ -95,7 +94,7 @@ class NeuroFM:
         -------
         dict
             Keys are the requested output names. Values are np.ndarrays.
-            'brain_health' shape: (4,) — [brain_age, brain_vol, ventricle_vol, sex]
+            'brain_health' shape: (4,) — [brain_age, sex, ventricle_volume, brain_volume]
             'latent' shape: (D,) — latent embedding dimension for the variant
         """
         if outputs is None:

@@ -15,6 +15,8 @@ import pandas as pd
 
 SUPPORTED_EXTENSIONS = (".nii", ".nii.gz")
 
+from .model import _BRAIN_HEALTH_INTERNAL, BRAIN_HEALTH_KEYS
+
 # ---------------------------------------------------------------------------
 # Input resolution
 # ---------------------------------------------------------------------------
@@ -98,7 +100,7 @@ def _resolve_csv(csv_path: str) -> list[str]:
 # Preprocessing
 # ---------------------------------------------------------------------------
 
-TARGET_SHAPE = (182, 218, 182)   # MNI152 1mm
+TARGET_SHAPE = (256, 256, 256)   # MNI152 1mm
 TARGET_ZOOMS = (1.0, 1.0, 1.0)  # 1mm isotropic
 TARGET_ORIENTATION = "LIA"
 
@@ -185,9 +187,6 @@ def _normalize(data: np.ndarray) -> np.ndarray:
 # Output writing
 # ---------------------------------------------------------------------------
 
-BRAIN_HEALTH_KEYS = ["brain_age", "brain_volume", "ventricle_volume", "sex"]
-
-
 def save_outputs(
     results: dict,
     input_path: str,
@@ -196,7 +195,7 @@ def save_outputs(
 ) -> None:
     """
     Save model outputs to disk, mirroring input filename structure.
-
+ 
     Parameters
     ----------
     results : dict
@@ -210,30 +209,30 @@ def save_outputs(
     """
     os.makedirs(output_dir, exist_ok=True)
     stem = _get_stem(input_path)
-
+ 
     if "brain_health" in outputs and "brain_health" in results:
         _save_brain_health(results["brain_health"], stem, output_dir)
-
+ 
     if "latent" in outputs and "latent" in results:
         out_path = os.path.join(output_dir, f"{stem}_latent.npy")
         np.save(out_path, results["latent"])
         logger.debug(f"Saved latent features → {out_path}")
-
-
+ 
+ 
 def _save_brain_health(values: np.ndarray, stem: str, output_dir: str) -> None:
     """Save brain health features as both .npy and a single-row .csv."""
     npy_path = os.path.join(output_dir, f"{stem}_brain_health.npy")
     csv_path = os.path.join(output_dir, f"{stem}_brain_health.csv")
-
+ 
     np.save(npy_path, values)
-
+ 
     df = pd.DataFrame([values.tolist()], columns=BRAIN_HEALTH_KEYS)
     df.insert(0, "input", stem)
     df.to_csv(csv_path, index=False)
-
+ 
     logger.debug(f"Saved brain health → {npy_path}, {csv_path}")
-
-
+ 
+ 
 def save_batch_summary(
     all_results: list[dict],
     input_paths: list[str],
@@ -250,21 +249,21 @@ def save_batch_summary(
         row = {"input": path}
         row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist())))
         rows.append(row)
-
+ 
     if not rows:
         return
-
+ 
     summary_path = os.path.join(output_dir, "results_summary.csv")
     df = pd.DataFrame(rows)
     write_header = not os.path.exists(summary_path)
     df.to_csv(summary_path, mode="a", header=write_header, index=False)
     logger.info(f"Summary written → {summary_path}")
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
+ 
 def _get_stem(path: str) -> str:
     """Strip directory and NIfTI extensions to get a clean filename stem."""
     base = os.path.basename(path)
@@ -272,3 +271,4 @@ def _get_stem(path: str) -> str:
         if base.endswith(ext):
             return base[: -len(ext)]
     return base
+ 
