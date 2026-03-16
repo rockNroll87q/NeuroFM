@@ -1,0 +1,14 @@
+# Core
+tensorflow==2.13.0
+numpy>=1.23.5,<2.0.0       # TF 2.13 is incompatible with numpy 2.0+
+nibabel>=5.0.0
+scipy>=1.10.0
+pandas>=2.0.0
+huggingface_hub>=0.20.0
+
+# Validation & typing
+pydantic>=2.0.0
+typeguard>=4.0.0
+
+# Logging
+loguru>=0.7.0
