@@ -9,7 +9,7 @@ module contains only what is needed to construct the model and load
 pretrained weights.
 """
 
-import logging
+from loguru import logger
 
 import tensorflow as tf
 from tensorflow.keras import Model
@@ -27,8 +27,14 @@ from typing import Literal
 from .layers import Plain, BottleNeck, Residual, add_conv_layer
 from .losses import losses_dict, metrics_dict
 
-logger = logging.getLogger(__name__)
 
+# Internal order matches the trained model output heads exactly.
+# Do not reorder — this must match predicted_variable in VARIANT_CONFIGS.
+_BRAIN_HEALTH_INTERNAL = ["PatientAge", "PatientSex", "ventricular_volume", "brain_volume"]
+ 
+# # User-facing column names in all output CSVs and .npy files.
+BRAIN_HEALTH_KEYS = ["brain_age", "sex", "ventricle_volume", "brain_volume"]
+ 
 
 # ---------------------------------------------------------------------------
 # Network configuration
@@ -47,7 +53,7 @@ class NetworkConfig(BaseModel):
     shape: tuple[int, int, int] = (182, 218, 182)  # fixed MNI152 1mm space
 
     # Encoder
-    conv_block: Literal["Plain", "BottleNeck", "Residual"] = "Plain"
+    conv_block: Literal["Plain", "BottleNeck", "Residual"] = "BottleNeck"
     num_conv_layers: int = 5
     num_initial_filter: int = 32
     conv_repetition: int = 2
@@ -55,8 +61,8 @@ class NetworkConfig(BaseModel):
     identity_layers: bool = False
     n_identity_layers: int = 3
     identity_layer_start: int = 3
-    activation: str = "relu"
-    bn: str = "GN"                              # "BN", "GN", or None
+    activation: str = "elu"
+    bn: str = "BN"                              # "BN", "GN", or None
     kernel_initializer: str = "he_normal"
     kernel_regularizer: float = 1e-4
     dropout_rate: float = 0.05
@@ -74,10 +80,8 @@ class NetworkConfig(BaseModel):
     neck_layer_size: int = 512
 
     # Output head
-    num_classes: list[int] = [1, 1, 1, 1]       # one per predicted variable
-    predicted_variable: list[str] = [
-        "brain_age", "brain_volume", "ventricle_volume", "sex"
-    ]
+    num_classes: list[int] = [1, 2, 1, 1]       # one per predicted variable
+    predicted_variable: list[str] = BRAIN_HEALTH_KEYS
     dense_predictors: bool = False
     num_dense_predictor_layers: int = 1
     dense_predictor_size: int = 128
@@ -94,18 +98,33 @@ VARIANT_CONFIGS: dict[str, NetworkConfig] = {
         num_conv_layers=5,
         num_initial_filter=32,
         num_neck_layers=0,
+        dropout_rate=0.1,
     ),
     "neurofm-m": NetworkConfig(
         num_conv_layers=7,
         num_initial_filter=32,
+        identity_layers=True,
+        n_identity_layers=5,
+        identity_layer_start=2,
+        num_dense_layers=1,
+        dense_predictors=True,
         neck_layer_size=256,
         num_neck_layers=2,
+        dropout_rate=0.25,
     ),
     "neurofm-l": NetworkConfig(
         num_conv_layers=8,
         num_initial_filter=32,
+        identity_layers=True,
+        n_identity_layers=5,
+        identity_layer_start=2,
+        num_dense_layers=1,
+        dense_predictors=True,
+        dense_predictor_size=256,
         neck_layer_size=512,
         num_neck_layers=2,
+        dropout_rate=0.25,
+        final_stage="dense",
     ),
 }
 
