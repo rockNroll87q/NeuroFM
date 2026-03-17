@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.13.0-gpu
+FROM tensorflow/tensorflow:2.13.0
 
 # NOTE: This devcontainer is intended for Linux (x86_64) only.
 # tensorflow:2.13.0 uses AVX2/AVX-512 instructions that are not fully
@@ -13,6 +13,9 @@ FROM tensorflow/tensorflow:2.13.0-gpu
 
 # Avoid interactive prompts during apt installs
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Force CPU — no GPU on Mac, avoids TF warnings
+ENV CUDA_VISIBLE_DEVICES=""
 
 # System dependencies
 RUN apt-get update && apt-get install -y \

@@ -1,19 +1,15 @@
 {
     "name": "NeuroFM",
     "build": {
-        "dockerfile": "Dockerfile",
+        "dockerfile": "Dockerfile.cpu", // remove .cpu when using the gpu container
         "context": ".."
     },
 
-    // GPU if available, CPU fallback — no hard requirement
-    "hostRequirements": {
-        "gpu": "optional"
-    },
-
-    // Pass GPUs through to the container when available
-    "runArgs": [
-        "--gpus", "all"
-    ],
+    // GPU passthrough disabled for CPU development (Mac).
+    // When switching to Linux with GPU, restore:
+    //   "hostRequirements": { "gpu": "optional" },
+    //   "runArgs": ["--gpus", "all"],
+    "runArgs": [],
 
     // Mount the repo into the container
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
@@ -37,7 +33,7 @@
                 // Python
                 "ms-python.python",
                 "ms-python.vscode-pylance",
-                "ms-python.black-formatter",
+                "charliermarsh.ruff",
 
                 // Notebooks
                 "ms-toolsai.jupyter",
@@ -51,7 +47,7 @@
             "settings": {
                 "python.defaultInterpreterPath": "/usr/local/bin/python",
                 "editor.formatOnSave": true,
-                "python.formatting.provider": "black",
+                "python.formatting.provider": "ruff",
                 "[python]": {
                     "editor.defaultFormatter": "ms-python.python"
                 },

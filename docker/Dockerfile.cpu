@@ -1,0 +1,63 @@
+# NeuroFM — CPU-only inference container
+#
+# Lighter weight than the GPU image — no CUDA/cuDNN dependencies.
+# Recommended for laptops, workstations without an NVIDIA GPU, and
+# HPC nodes where Singularity is unavailable or GPU allocation is limited.
+#
+# Usage:
+#   docker pull rocknroll87q/neurofm:cpu
+#
+#   # Single file
+#   docker run --rm -v /path/to/data:/data rocknroll87q/neurofm:cpu \
+#       --input /data/scan.nii.gz --output /data/results/
+#
+#   # Directory
+#   docker run --rm -v /path/to/data:/data rocknroll87q/neurofm:cpu \
+#       --input /data/study/ --output /data/results/
+#
+#   # CSV
+#   docker run --rm -v /path/to/data:/data rocknroll87q/neurofm:cpu \
+#       --input /data/subjects.csv --output /data/results/
+#
+# Build:
+#   docker build -t rocknroll87q/neurofm:cpu -f docker/Dockerfile.cpu .
+
+FROM tensorflow/tensorflow:2.13.0
+
+# Avoid interactive prompts during apt installs
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Suppress TF startup noise; set to 0 for full verbosity when debugging
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+# Force CPU — avoids TF warnings about missing GPU drivers
+ENV CUDA_VISIBLE_DEVICES=""
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/neurofm
+
+# Install Python dependencies first to cache this layer
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy and install the package
+COPY . .
+RUN pip install --no-cache-dir .
+
+# Weights are downloaded at runtime and cached inside the container.
+# To persist the cache across runs, mount a volume:
+#   docker run --rm \
+#       -v /path/to/data:/data \
+#       -v neurofm-weights:/root/.cache/NeuroFM \
+#       rocknroll87q/neurofm:cpu --input /data/scan.nii.gz --output /data/results/
+ENV NEUROFM_CACHE_DIR=/root/.cache/NeuroFM
+
+# Default entrypoint runs the inference script in CPU mode.
+# All arguments after the image name are passed through to run_inference.py.
+ENTRYPOINT ["python", "/opt/neurofm/scripts/run_inference.py", "--device", "cpu"]
+CMD ["--help"]

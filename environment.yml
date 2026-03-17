@@ -1,4 +1,8 @@
 name: neurofm
+# Recommended installer: Miniforge (free, no Anaconda license required)
+#   https://github.com/conda-forge/miniforge
+#   brew install miniforge    # macOS via Homebrew
+#   mamba env create -f environment.yml
 channels:
   - conda-forge
   - defaults

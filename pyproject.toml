@@ -70,9 +70,8 @@ neurofm = "scripts.run_inference:main"
 
 [project.urls]
 Homepage = "https://github.com/rockNroll87q/NeuroFM"
-Paper = ""
 "Bug Tracker" = "https://github.com/rockNroll87q/NeuroFM/issues"
-Zenodo = ""
+# Paper = ""      # TODO: add bioRxiv DOI once available
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -80,11 +79,11 @@ include = ["neurofm*"]
 
 [tool.black]
 line-length = 88
-target-version = ["py38", "py39"]
+target-version = ["py39", "py310"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py39"
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
