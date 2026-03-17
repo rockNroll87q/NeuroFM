@@ -10,9 +10,11 @@ pretrained weights.
 """
 from __future__ import annotations
 
-from loguru import logger
+from typing import Literal
 
 import tensorflow as tf
+from loguru import logger
+from pydantic import BaseModel
 from tensorflow.keras import Model
 from tensorflow.keras.layers import (
     Activation,
@@ -22,12 +24,9 @@ from tensorflow.keras.layers import (
     Flatten,
     GlobalAveragePooling3D,
 )
-from pydantic import BaseModel, Field
-from typing import Literal
 
-from .layers import Plain, BottleNeck, Residual, add_conv_layer
+from .layers import BottleNeck, Plain, Residual, add_conv_layer
 from .losses import losses_dict, metrics_dict
-
 
 # Internal order matches the trained model output heads exactly.
 # Do not reorder — this must match predicted_variable in VARIANT_CONFIGS.
@@ -227,7 +226,6 @@ def build_model(config: NetworkConfig) -> Model:
 
     return Model(input_layer, output_layer)
 
-
 def _build_encoder_layers(config: NetworkConfig, x):
     with tf.name_scope("Encoder"):
         for f in range(config.num_conv_layers):
@@ -333,3 +331,23 @@ def _build_output_layers(config: NetworkConfig, x):
 
 def _count_params(model: Model) -> int:
     return int(sum(tf.size(w).numpy() for w in model.trainable_weights))
+
+def get_mid_layer(model, layer_name):
+    """
+    Returns a new Keras model that has the outputs as the specified intermediate layer.
+    This can be useful for extracting features or using the output of a specific 
+    layer. Pass the returned object of this function to `extract_latent_features`, 
+    for example.
+
+    Parameters:
+        - model (Keras model): The original model from which to extract
+            the intermediate layer.
+        - layer_name (str): The name of the intermediate layer to 
+            extract.
+
+    Returns:
+        - intermediate_layer_model (Keras model): A new Keras model that 
+            only goes up to the specified intermediate layer.
+    """
+    intermediate_layer_model = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+    return intermediate_layer_model

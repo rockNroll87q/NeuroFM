@@ -5,16 +5,15 @@ Core inference logic. The NeuroFM class is the primary user-facing API.
 """
 from __future__ import annotations
 
-from loguru import logger
 import numpy as np
 import tensorflow as tf
+from loguru import logger
 
-from .weights import get_weights_path, VARIANTS, DEFAULT_VARIANT
-from .model import load_neurofm, BRAIN_HEALTH_KEYS
 from .io import load_and_preprocess
+from .model import get_mid_layer, load_neurofm
+from .weights import DEFAULT_VARIANT, VARIANTS, get_weights_path
 
 VALID_OUTPUTS = {"brain_health", "latent"}
-# BRAIN_HEALTH_KEYS = ["brain_age", "brain_volume", "ventricle_volume", "sex"]
 LATENT_LAYER_NAME = "multihead_output"
 
 class NeuroFM:
@@ -163,10 +162,10 @@ class NeuroFM:
 
     def _predict_latent(self, volume: np.ndarray) -> np.ndarray:
         if self._latent_model is None:
-            self._latent_model = _build_latent_model(
+            self._latent_model = get_mid_layer(
                 self._model, LATENT_LAYER_NAME
             )
-        embedding = self._latent_model.predict(volume, verbose=0)
+        embedding = self._latent_model.predict(volume, verbose=False)
         return np.squeeze(embedding).astype(np.float32)
 
 

@@ -8,9 +8,9 @@ for programmatic access.
 from __future__ import annotations
 
 import os
-from loguru import logger
 
 from huggingface_hub import hf_hub_download
+from loguru import logger
 
 HF_REPO_ID = "rocknroll87q/NeuroFM"
 DEFAULT_CACHE_DIR = os.path.expanduser("~/.cache/NeuroFM")
@@ -21,18 +21,21 @@ DEFAULT_VARIANT = "neurofm-s"
 VARIANTS = {
     "neurofm-s": {
         "filename": "neurofm-s.h5",
+        "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "484k",
         "latent_dim": 161,
         "description": "Small — fast CPU inference, suitable for large cohorts.",
     },
     "neurofm-m": {
         "filename": "neurofm-m.h5",
+        "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "6.5M",
         "latent_dim": 256,
         "description": "Medium — balanced accuracy and speed.",
     },
     "neurofm-l": {
         "filename": "neurofm-l.h5",
+        "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "10.8M",
         "latent_dim": 512,
         "description": "Large — maximum accuracy, GPU recommended.",

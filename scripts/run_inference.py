@@ -27,14 +27,15 @@ With options:
 from __future__ import annotations
 
 import argparse
-from loguru import logger
-import sys
 import os
+import sys
+
+from loguru import logger
 
 # Allow running as a script without installing the package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from neurofm import NeuroFM
+from neurofm import NeuroFM  # noqa: I001
 from neurofm.io import resolve_inputs, save_outputs, save_batch_summary
 from neurofm.weights import DEFAULT_VARIANT, list_variants
 
@@ -106,16 +107,18 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
+    # List out model variants to the console for convenience
     if args.list_variants:
         list_variants()
         sys.exit(0)
 
-    # Parse outputs
+    # Parse requested model outputs (health, latents, etc.)
     requested_outputs = [o.strip() for o in args.outputs.split(",")]
 
     # Resolve inputs
     logger.info(f"Resolving inputs from: {args.input}")
     try:
+        # from the passed file path (file, dir, .csv), get our input paths
         input_paths = resolve_inputs(args.input)
     except (FileNotFoundError, ValueError) as e:
         logger.error(str(e))
@@ -135,13 +138,14 @@ def main() -> None:
         logger.error(f"Failed to load model: {e}")
         sys.exit(1)
 
-    # Run inference
+    # Run inference. Returns a list (one for each input MRI)
+    # and each entry is a dict with a result per output (brain_health/latents)
     all_results = model.predict_batch(input_paths, outputs=requested_outputs)
 
     # Save outputs
     successful = 0
     failed = 0
-    for path, result in zip(input_paths, all_results):
+    for path, result in zip(input_paths, all_results, strict=True):
         if result is None:
             failed += 1
             continue
@@ -155,7 +159,7 @@ def main() -> None:
     # Write batch summary CSV if processing more than one scan
     if len(input_paths) > 1:
         completed_paths = [
-            p for p, r in zip(input_paths, all_results) if r is not None
+            p for p, r in zip(input_paths, all_results, strict=True) if r is not None
         ]
         completed_results = [r for r in all_results if r is not None]
         if completed_results:
