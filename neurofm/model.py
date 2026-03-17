@@ -50,7 +50,7 @@ class NetworkConfig(BaseModel):
     """
 
     # Input
-    shape: tuple[int, int, int] = (182, 218, 182)  # fixed MNI152 1mm space
+    shape: tuple[int, int, int] = (256, 256, 256)
 
     # Encoder
     conv_block: Literal["Plain", "BottleNeck", "Residual"] = "BottleNeck"

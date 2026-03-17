@@ -10,8 +10,8 @@ import tensorflow as tf
 from loguru import logger
 
 from .io import load_and_preprocess
-from .model import get_mid_layer, load_neurofm
-from .weights import DEFAULT_VARIANT, VARIANTS, get_weights_path
+from .model import _BRAIN_HEALTH_INTERNAL, get_mid_layer, load_neurofm
+from .weights import DEFAULT_STD_CONSTS, DEFAULT_VARIANT, VARIANTS, get_weights_path
 
 VALID_OUTPUTS = {"brain_health", "latent"}
 LATENT_LAYER_NAME = "multihead_output"
@@ -55,10 +55,12 @@ class NeuroFM:
         device: str = "auto",
         weights: str | None = None,
         cache_dir: str = "~/.cache/NeuroFM",
+        standardization_constants: dict = DEFAULT_STD_CONSTS
     ):
         self.variant = variant
         self.device = device
         self._latent_dim = VARIANTS[variant]["latent_dim"]
+        self.std_consts = DEFAULT_STD_CONSTS
 
         _configure_device(device)
 
@@ -107,10 +109,18 @@ class NeuroFM:
         results = {}
 
         if "brain_health" in outputs:
-            results["brain_health"] = self._predict_brain_health(volume)
+            try:
+                results["brain_health"] = self._predict_brain_health(volume)
+            except Exception as e:
+                logger.warning(f"Failed to process brain_health for {input_path}: {e}")
+                results["brain_health"] = None
 
         if "latent" in outputs:
-            results["latent"] = self._predict_latent(volume)
+            try:
+                results["latent"] = self._predict_latent(volume)
+            except Exception as e:
+                logger.warning(f"Failed to process latent for {input_path}: {e}")
+                results["latent"] = None
 
         return results
 
@@ -156,9 +166,31 @@ class NeuroFM:
     # ------------------------------------------------------------------
 
     def _predict_brain_health(self, volume: np.ndarray) -> np.ndarray:
+        logger.debug(volume.shape)
         preds = self._model.predict(volume, verbose=0)
         # preds shape: (1, 4) — squeeze batch dim
-        return np.squeeze(preds).astype(np.float32)
+
+        # initialize before populating
+        preds_processed = [0] * len(_BRAIN_HEALTH_INTERNAL)
+
+        # each item in the order we set in the config
+        for output_name in _BRAIN_HEALTH_INTERNAL:
+            if output_name == 'PatientSex':
+                continue
+            out_idx = _BRAIN_HEALTH_INTERNAL.index(output_name)
+            # get rid of extra dim and then de-standardize
+            pred_raw = np.squeeze(preds[out_idx])
+            pred_scaled = self._unstandardize(pred_raw, output_name)
+            preds_processed[out_idx] = pred_scaled
+
+        # sex is the outlier, it just needs arg-maxed. We will
+        # leave the class as a binary int/float
+        logger.debug(_BRAIN_HEALTH_INTERNAL)
+        sex_idx = _BRAIN_HEALTH_INTERNAL.index("PatientSex")
+        sex_pred = np.argmax(preds[sex_idx])
+
+        preds_processed[sex_idx] = sex_pred
+        return np.squeeze(preds_processed).astype(np.float32)
 
     def _predict_latent(self, volume: np.ndarray) -> np.ndarray:
         if self._latent_model is None:
@@ -168,6 +200,10 @@ class NeuroFM:
         embedding = self._latent_model.predict(volume, verbose=False)
         return np.squeeze(embedding).astype(np.float32)
 
+    def _unstandardize(self, value, var_name):
+        mu = self.std_consts[var_name]['mean']
+        std = self.std_consts[var_name]['std']
+        return (value * std) + mu
 
 # ---------------------------------------------------------------------------
 # Device configuration

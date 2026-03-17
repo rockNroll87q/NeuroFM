@@ -22,7 +22,14 @@ With options:
         --output ./results/ \\
         --model neurofm-l \\
         --outputs brain_health,latent \\
+        --output-mode mirror \\
         --device gpu
+
+Resume interrupted run (skip already-processed scans):
+    python scripts/run_inference.py --input /data/ --output ./results/
+
+Force reprocess everything:
+    python scripts/run_inference.py --input /data/ --output ./results/ --overwrite
 """
 from __future__ import annotations
 
@@ -36,7 +43,14 @@ from loguru import logger
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from neurofm import NeuroFM  # noqa: I001
-from neurofm.io import resolve_inputs, save_outputs, save_batch_summary
+from neurofm.io import (
+    OUTPUT_MODES,
+    infer_input_root,
+    load_cached_result,
+    resolve_inputs,
+    save_batch_summary,
+    save_outputs,
+)
 from neurofm.weights import DEFAULT_VARIANT, list_variants
 
 
@@ -71,6 +85,23 @@ def parse_args() -> argparse.Namespace:
              "Options: brain_health, latent (default: brain_health).",
     )
     parser.add_argument(
+        "--output-mode",
+        default="flat",
+        choices=OUTPUT_MODES,
+        help=(
+            "How to organise output files (default: flat).\n"
+            "  flat    — all outputs in a single directory\n"
+            "  mirror  — mirrors the input directory structure\n"
+            "  summary — summary CSV and aggregate latent .npy only, no per-file outputs"
+        ),
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing outputs. By default, scans with existing "
+             "outputs are loaded from disk and skipped (cache behaviour).",
+    )
+    parser.add_argument(
         "--device",
         default="auto",
         choices=["auto", "cpu", "gpu"],
@@ -80,15 +111,13 @@ def parse_args() -> argparse.Namespace:
         "--weights",
         default=None,
         metavar="PATH",
-        help="Path to a local weights .h5 file. "
-             "Overrides automatic download.",
+        help="Path to a local weights .h5 file. Overrides automatic download.",
     )
     parser.add_argument(
         "--cache-dir",
         default="~/.cache/NeuroFM",
         metavar="DIR",
-        help="Directory for caching downloaded weights "
-             "(default: ~/.cache/NeuroFM).",
+        help="Directory for caching downloaded weights (default: ~/.cache/NeuroFM).",
     )
     parser.add_argument(
         "--list-variants",
@@ -107,18 +136,22 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    # List out model variants to the console for convenience
+    if args.verbose:
+        logger.remove()
+        logger.add(sys.stderr, level="DEBUG")
+
     if args.list_variants:
         list_variants()
         sys.exit(0)
 
-    # Parse requested model outputs (health, latents, etc.)
     requested_outputs = [o.strip() for o in args.outputs.split(",")]
+    output_root = os.path.expanduser(args.output)
 
+    # ------------------------------------------------------------------
     # Resolve inputs
+    # ------------------------------------------------------------------
     logger.info(f"Resolving inputs from: {args.input}")
     try:
-        # from the passed file path (file, dir, .csv), get our input paths
         input_paths = resolve_inputs(args.input)
     except (FileNotFoundError, ValueError) as e:
         logger.error(str(e))
@@ -126,54 +159,98 @@ def main() -> None:
 
     logger.info(f"Found {len(input_paths)} scan(s) to process.")
 
-    # Load model
-    try:
-        model = NeuroFM(
-            variant=args.model,
-            device=args.device,
-            weights=args.weights,
-            cache_dir=args.cache_dir,
+    # For mirror mode — find the common root of all inputs so relative
+    # paths can be reconstructed correctly
+    input_root = infer_input_root(input_paths)
+
+    # ------------------------------------------------------------------
+    # Cache check — split inputs into cached vs needs inference
+    # ------------------------------------------------------------------
+    all_results: list[dict | None] = [None] * len(input_paths)
+    to_run: list[tuple[int, str]] = []   # (original index, path)
+    n_cached = 0
+
+    if not args.overwrite and args.output_mode != "summary":
+        for idx, path in enumerate(input_paths):
+            cached = load_cached_result(
+                path, output_root, args.output_mode,
+                requested_outputs, input_root,
+            )
+            if cached is not None:
+                all_results[idx] = cached
+                n_cached += 1
+            else:
+                to_run.append((idx, path))
+    else:
+        to_run = list(enumerate(input_paths))
+
+    if n_cached:
+        logger.info(
+            f"{n_cached} scan(s) loaded from cache. "
+            f"{len(to_run)} scan(s) queued for inference."
         )
-    except Exception as e:
-        logger.error(f"Failed to load model: {e}")
-        sys.exit(1)
 
-    # Run inference. Returns a list (one for each input MRI)
-    # and each entry is a dict with a result per output (brain_health/latents)
-    all_results = model.predict_batch(input_paths, outputs=requested_outputs)
+    # ------------------------------------------------------------------
+    # Load model (only if there's actually inference to run)
+    # ------------------------------------------------------------------
+    if to_run:
+        try:
+            model = NeuroFM(
+                variant=args.model,
+                device=args.device,
+                weights=args.weights,
+                cache_dir=args.cache_dir,
+            )
+        except Exception as e:
+            logger.error(f"Failed to load model: {e}")
+            sys.exit(1)
 
-    # Save outputs
+        paths_to_run = [path for _, path in to_run]
+        batch_results = model.predict_batch(paths_to_run, outputs=requested_outputs)
+
+        for (original_idx, _), result in zip(to_run, batch_results, strict=True):
+            all_results[original_idx] = result
+    else:
+        logger.info("All scans loaded from cache — skipping model load.")
+
+    # ------------------------------------------------------------------
+    # Save per-file outputs
+    # ------------------------------------------------------------------
     successful = 0
     failed = 0
+
     for path, result in zip(input_paths, all_results, strict=True):
         if result is None:
             failed += 1
             continue
         try:
-            save_outputs(result, path, args.output, requested_outputs)
+            save_outputs(
+                result, path, output_root,
+                requested_outputs, args.output_mode, input_root,
+            )
             successful += 1
         except Exception as e:
             logger.warning(f"Failed to save outputs for {path}: {e}")
             failed += 1
 
-    # Write batch summary CSV if processing more than one scan
-    if len(input_paths) > 1:
-        completed_paths = [
-            p for p, r in zip(input_paths, all_results, strict=True) if r is not None
-        ]
-        completed_results = [r for r in all_results if r is not None]
-        if completed_results:
-            save_batch_summary(completed_results, completed_paths, args.output)
+    # ------------------------------------------------------------------
+    # Write aggregate summary
+    # ------------------------------------------------------------------
+    save_batch_summary(
+        all_results, input_paths, output_root, requested_outputs,
+    )
 
+    # ------------------------------------------------------------------
     # Final report
+    # ------------------------------------------------------------------
     logger.info(
-        f"Done. {successful} scan(s) completed successfully"
+        f"Done. {successful} scan(s) completed"
+        + (f" ({n_cached} from cache)" if n_cached else "")
         + (f", {failed} failed." if failed else ".")
     )
+
     if failed:
-        logger.warning(
-            f"{failed} scan(s) failed. Check logs above for details."
-        )
+        logger.warning(f"{failed} scan(s) failed. Check logs above for details.")
         sys.exit(1)
 
 

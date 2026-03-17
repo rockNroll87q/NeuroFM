@@ -3,6 +3,19 @@ neurofm/io.py
 
 Input resolution, preprocessing, and output writing.
 Accepts a single file, directory, or CSV with an 'input' column.
+
+Output modes
+------------
+flat     All outputs written to a single flat directory. Default.
+mirror   Output directory tree mirrors the input directory structure.
+summary  Summary CSV and aggregate latent .npy only — no per-file outputs.
+         Useful when disk space is a concern or only aggregate results needed.
+
+Caching
+-------
+Per-file brain_health outputs double as a cache. If an output file already
+exists and --overwrite is not set, the file is loaded from disk and included
+in the final aggregate rather than re-running inference. Logged at DEBUG level.
 """
 from __future__ import annotations
 
@@ -16,10 +29,10 @@ from loguru import logger
 from nibabel.processing import conform
 from scipy import stats
 
-from .model import _BRAIN_HEALTH_INTERNAL, BRAIN_HEALTH_KEYS
+from .model import _BRAIN_HEALTH_INTERNAL, BRAIN_HEALTH_KEYS  # noqa: F401
 
 SUPPORTED_EXTENSIONS = (".nii", ".nii.gz")
-
+OUTPUT_MODES = ("flat", "mirror", "summary")
 
 # ---------------------------------------------------------------------------
 # Input resolution
@@ -69,10 +82,8 @@ def _resolve_single(path: str) -> list[str]:
 def _resolve_directory(directory: str) -> list[str]:
     paths = []
     for ext in SUPPORTED_EXTENSIONS:
-        # glob doesn't handle .nii.gz with a single *, so handle both
         pattern = os.path.join(directory, "**", f"*{ext}")
         paths.extend(glob(pattern, recursive=True))
-    # Deduplicate (a .nii file won't also match .nii.gz, but be safe)
     seen = set()
     unique = []
     for p in sorted(paths):
@@ -104,9 +115,10 @@ def _resolve_csv(csv_path: str) -> list[str]:
 # Preprocessing
 # ---------------------------------------------------------------------------
 
-TARGET_SHAPE = (256, 256, 256)   # MNI152 1mm
-TARGET_ZOOMS = (1.0, 1.0, 1.0)  # 1mm isotropic
+TARGET_SHAPE = (256, 256, 256)
+TARGET_ZOOMS = (1.0, 1.0, 1.0)
 TARGET_ORIENTATION = "LIA"
+
 
 def load_and_preprocess(path: str) -> np.ndarray:
     """
@@ -131,24 +143,15 @@ def load_and_preprocess(path: str) -> np.ndarray:
     data = _normalize(data)
     return data[np.newaxis, ..., np.newaxis]  # (1, X, Y, Z, 1)
 
-def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
-    """
-    Reorient image to TARGET_ORIENTATION (LIA) using nibabel's orientation
-    transform utilities.
 
-    Handles oblique acquisitions by snapping to the closest cardinal
-    orientation before transforming to LIA. Warns if the input orientation
-    is ambiguous or cannot be determined from the affine.
-    """
+def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
     current_codes = nib.aff2axcodes(img.affine)
     current_orientation = "".join(current_codes)
 
     if current_orientation == TARGET_ORIENTATION:
         return img
 
-    logger.debug(
-        f"Reorienting from '{current_orientation}' to '{TARGET_ORIENTATION}'."
-    )
+    logger.debug(f"Reorienting from '{current_orientation}' to '{TARGET_ORIENTATION}'.")
 
     try:
         current_ornt = nib.orientations.axcodes2ornt(current_codes)
@@ -158,21 +161,13 @@ def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
     except Exception as e:
         logger.warning(
             f"Reorientation from '{current_orientation}' to '{TARGET_ORIENTATION}' "
-            f"failed ({e}). Proceeding with original orientation -- "
-            f"results may be degraded."
+            f"failed ({e}). Proceeding with original orientation — results may be degraded."
         )
 
     return img
 
 
 def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
-    """
-    Resample image to TARGET_ZOOMS (1mm isotropic) and conform to TARGET_SHAPE.
-
-    Uses nibabel.processing.conform() which handles both resampling and
-    field-of-view cropping/padding in a single step, preserving the affine
-    correctly. Interpolation order 1 (trilinear) is standard for T1w data.
-    """
     current_zooms = tuple(float(z) for z in img.header.get_zooms()[:3])
     current_shape = img.shape[:3]
 
@@ -189,13 +184,13 @@ def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
             img,
             out_shape=TARGET_SHAPE,
             voxel_size=TARGET_ZOOMS,
-            order=1,        # trilinear interpolation
-            cval=0.0,       # fill value for regions outside FOV
+            order=1,
+            cval=0.0,
             orientation=TARGET_ORIENTATION,
         )
     except Exception as e:
         logger.warning(
-            f"Resampling failed ({e}). Proceeding with original resolution -- "
+            f"Resampling failed ({e}). Proceeding with original resolution — "
             f"results may be degraded."
         )
 
@@ -203,8 +198,111 @@ def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
 
 
 def _normalize(data: np.ndarray) -> np.ndarray:
-    # basic z-scoring, as we did when training
     return stats.zscore(data, axis=None)
+
+
+# ---------------------------------------------------------------------------
+# Output path resolution
+# ---------------------------------------------------------------------------
+
+def get_output_dir(
+    input_path: str,
+    output_root: str,
+    output_mode: str,
+    input_root: str | None = None,
+) -> str:
+    """
+    Resolve the output directory for a given input file.
+
+    Parameters
+    ----------
+    input_path : str
+        Absolute path to the input NIfTI file.
+    output_root : str
+        Root output directory specified by the user.
+    output_mode : str
+        One of 'flat', 'mirror', 'summary'.
+    input_root : str | None
+        For mirror mode — the common root of all input paths, used to
+        reconstruct relative directory structure. If None, uses the
+        input file's parent directory.
+
+    Returns
+    -------
+    str
+        Directory where outputs for this input file should be written.
+    """
+    if output_mode in ("flat", "summary"):
+        return output_root
+
+    # mirror mode: reconstruct relative path under output_root
+    if input_root is None:
+        input_root = os.path.dirname(input_path)
+
+    try:
+        rel = os.path.relpath(os.path.dirname(input_path), input_root)
+        return os.path.join(output_root, rel)
+    except ValueError:
+        # relpath can fail across drives on Windows
+        logger.warning(
+            "Could not compute relative path for mirror mode "
+            f"(input: {input_path}, root: {input_root}). Falling back to flat."
+        )
+        return output_root
+
+
+def get_expected_output_path(
+    input_path: str,
+    output_root: str,
+    output_mode: str,
+    input_root: str | None = None,
+) -> str:
+    """
+    Return the expected path of the brain_health .npy for a given input.
+    Used by the CLI to check whether cached outputs exist before running inference.
+    """
+    out_dir = get_output_dir(input_path, output_root, output_mode, input_root)
+    stem = _get_stem(input_path)
+    return os.path.join(out_dir, f"{stem}_brain_health.npy")
+
+
+# ---------------------------------------------------------------------------
+# Cache loading
+# ---------------------------------------------------------------------------
+
+def load_cached_result(
+    input_path: str,
+    output_root: str,
+    output_mode: str,
+    requested_outputs: list[str],
+    input_root: str | None = None,
+) -> dict | None:
+    """
+    Attempt to load previously saved outputs for a given input file.
+
+    Returns a results dict (same structure as NeuroFM.predict()) if all
+    requested outputs are found on disk, otherwise returns None.
+    """
+    out_dir = get_output_dir(input_path, output_root, output_mode, input_root)
+    stem = _get_stem(input_path)
+    result = {}
+
+    if "brain_health" in requested_outputs:
+        bh_path = os.path.join(out_dir, f"{stem}_brain_health.npy")
+        if not os.path.isfile(bh_path):
+            return None
+        result["brain_health"] = np.load(bh_path)
+        logger.debug(f"Cache hit — loaded brain_health from {bh_path}")
+
+    if "latent" in requested_outputs:
+        lat_path = os.path.join(out_dir, f"{stem}_latent.npy")
+        if not os.path.isfile(lat_path):
+            return None
+        result["latent"] = np.load(lat_path)
+        logger.debug(f"Cache hit — loaded latent from {lat_path}")
+
+    return result if result else None
+
 
 # ---------------------------------------------------------------------------
 # Output writing
@@ -213,11 +311,16 @@ def _normalize(data: np.ndarray) -> np.ndarray:
 def save_outputs(
     results: dict,
     input_path: str,
-    output_dir: str,
-    outputs: list[str],
+    output_root: str,
+    requested_outputs: list[str],
+    output_mode: str = "flat",
+    input_root: str | None = None,
 ) -> None:
     """
-    Save model outputs to disk, mirroring input filename structure.
+    Save per-file model outputs to disk.
+
+    Skipped entirely in 'summary' mode — aggregate outputs are written
+    by save_batch_summary() instead.
 
     Parameters
     ----------
@@ -225,61 +328,99 @@ def save_outputs(
         Output of NeuroFM.predict(), keyed by output name.
     input_path : str
         Original input file path (used to derive output filename).
-    output_dir : str
-        Root directory to write outputs into.
-    outputs : list[str]
+    output_root : str
+        Root output directory.
+    requested_outputs : list[str]
         Which outputs to save, e.g. ["brain_health", "latent"].
+    output_mode : str
+        One of 'flat', 'mirror', 'summary'.
+    input_root : str | None
+        For mirror mode — common root of all input paths.
     """
-    os.makedirs(output_dir, exist_ok=True)
+    if output_mode == "summary":
+        return
+
+    out_dir = get_output_dir(input_path, output_root, output_mode, input_root)
+    os.makedirs(out_dir, exist_ok=True)
     stem = _get_stem(input_path)
 
-    if "brain_health" in outputs and "brain_health" in results:
-        _save_brain_health(results["brain_health"], stem, output_dir)
+    if "brain_health" in requested_outputs and "brain_health" in results:
+        npy_path = os.path.join(out_dir, f"{stem}_brain_health.npy")
+        np.save(npy_path, results["brain_health"])
+        logger.debug(f"Saved brain_health -> {npy_path}")
 
-    if "latent" in outputs and "latent" in results:
-        out_path = os.path.join(output_dir, f"{stem}_latent.npy")
-        np.save(out_path, results["latent"])
-        logger.debug(f"Saved latent features → {out_path}")
+    if "latent" in requested_outputs and "latent" in results:
+        lat_path = os.path.join(out_dir, f"{stem}_latent.npy")
+        np.save(lat_path, results["latent"])
+        logger.debug(f"Saved latent -> {lat_path}")
 
-
-def _save_brain_health(values: np.ndarray, stem: str, output_dir: str) -> None:
-    """Save brain health features as both .npy and a .csv."""
-    npy_path = os.path.join(output_dir, f"{stem}_brain_health.npy")
-    csv_path = os.path.join(output_dir, f"{stem}_brain_health.csv")
-
-    np.save(npy_path, values)
-
-    df = pd.DataFrame([values.tolist()], columns=BRAIN_HEALTH_KEYS)
-    df.insert(0, "input", stem)
-    df.to_csv(csv_path, index=False)
-
-    logger.debug(f"Saved brain health → {npy_path}, {csv_path}")
 
 def save_batch_summary(
     all_results: list[dict],
     input_paths: list[str],
     output_dir: str,
+    requested_outputs: list[str],
 ) -> None:
     """
-    Write a single summary CSV consolidating brain_health results across
-    all processed scans. Appended to output_dir/results_summary.csv.
+    Write aggregate outputs across all processed scans:
+      - results_summary.csv        brain_health values for all scans
+      - latent_embeddings.npy      shape (N, D), if latent was requested
+      - latent_embeddings_index.csv maps rows of latent_embeddings.npy to input paths
+
+    Parameters
+    ----------
+    all_results : list[dict]
+        One result dict per input path. None entries (failed scans) are skipped.
+    input_paths : list[str]
+        Input paths in the same order as all_results.
+    output_dir : str
+        Directory to write aggregate outputs into.
+    requested_outputs : list[str]
+        Which outputs were requested.
     """
-    rows = []
+    os.makedirs(output_dir, exist_ok=True)
+
+    bh_rows = []
+    latent_rows = []
+    latent_input_paths = []
+
     for path, result in zip(input_paths, all_results, strict=True):
-        if "brain_health" not in result:
+        if result is None:
             continue
-        row = {"input": path}
-        row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist(), strict=True)))
-        rows.append(row)
 
-    if not rows:
-        return
+        if 'brain_health' in result and result['brain_health'] is None \
+            or 'latent' in result and result['latent'] is None:
+            continue
 
-    summary_path = os.path.join(output_dir, "results_summary.csv")
-    df = pd.DataFrame(rows)
-    write_header = not os.path.exists(summary_path)
-    df.to_csv(summary_path, mode="a", header=write_header, index=False)
-    logger.info(f"Summary written → {summary_path}")
+        if "brain_health" in requested_outputs and "brain_health" in result:
+            row = {"input": path}
+            row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist(), strict=True)))
+            bh_rows.append(row)
+
+        if "latent" in requested_outputs and "latent" in result:
+            latent_rows.append(result["latent"])
+            latent_input_paths.append(path)
+
+    if bh_rows:
+        summary_path = os.path.join(output_dir, "results_summary.csv")
+        df = pd.DataFrame(bh_rows)
+        write_header = not os.path.exists(summary_path)
+        df.to_csv(summary_path, mode="a", header=write_header, index=False)
+        logger.info(f"Summary CSV written -> {summary_path} ({len(bh_rows)} scan(s))")
+
+    if latent_rows:
+        latent_array = np.stack(latent_rows, axis=0)  # (N, D)
+        latent_path = os.path.join(output_dir, "latent_embeddings.npy")
+        np.save(latent_path, latent_array)
+
+        # Index CSV so users can map rows back to input paths
+        index_path = os.path.join(output_dir, "latent_embeddings_index.csv")
+        pd.DataFrame({"input": latent_input_paths}).to_csv(index_path, index=False)
+
+        logger.info(
+            f"Latent embeddings written -> {latent_path} "
+            f"(shape: {latent_array.shape}), index -> {index_path}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -293,3 +434,14 @@ def _get_stem(path: str) -> str:
         if base.endswith(ext):
             return base[: -len(ext)]
     return base
+
+
+def infer_input_root(input_paths: list[str]) -> str | None:
+    """
+    For mirror mode — find the common directory prefix across all input paths.
+    Returns None if inputs come from completely different trees.
+    """
+    if not input_paths:
+        return None
+    dirs = [os.path.dirname(p) for p in input_paths]
+    return os.path.commonpath(dirs) or None

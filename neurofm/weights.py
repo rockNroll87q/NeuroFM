@@ -16,6 +16,12 @@ HF_REPO_ID = "rocknroll87q/NeuroFM"
 DEFAULT_CACHE_DIR = os.path.expanduser("~/.cache/NeuroFM")
 DEFAULT_VARIANT = "neurofm-s"
 
+DEFAULT_STD_CONSTS = {
+    'PatientAge': {'mean': 63.0270771713598, 'std': 10.9996084993436},
+    'brain_volume': {'mean': 1469707.60713924, 'std': 187472.342357356},
+    'ventricular_volume': {'mean': 89309.9694533562, 'std': 47429.5375731711}
+}
+
 # Registry of all available model variants.
 # Keys are the user-facing variant names (passed via --model).
 VARIANTS = {
@@ -67,6 +73,9 @@ def get_weights_path(
     str
         Absolute path to the weights .h5 file.
     """
+    # if user-dir symbol ~ is used, we need to expand it. Should be harmless to always ensure.
+    cache_dir = os.path.expanduser(cache_dir)
+
     if local_path is not None:
         local_path = os.path.expanduser(local_path)
         if not os.path.isfile(local_path):

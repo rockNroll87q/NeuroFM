@@ -185,10 +185,10 @@ A 4-element array in the order `[brain_age, sex, ventricle_volume, brain_volume]
  
 | Feature | Description | Unit | Range |
 |---------|-------------|------|-------|
-| `brain_age` | Predicted brain age | years | 40.0 – 90.0 |
-| `sex` | Predicted biological sex | — | 0.0 (male) – 1.0 (female) |
-| `ventricle_volume` | Lateral ventricle volume | mm³ | 0 – 180×10³ |
-| `brain_volume` | Total brain volume (GM+WM) | mm³ | 1×10⁶ – 1.9×10⁶ |
+| `brain_age` | Predicted brain age | years | 40.0 - 90.0 |
+| `sex` | Predicted biological sex | - | 0.0 (female) - 1.0 (male) |
+| `ventricle_volume` | Lateral ventricle volume | mm³ | 0 - 180×10³ |
+| `brain_volume` | Total brain volume (GM+WM) | mm³ | 1×10⁶ - 1.9×10⁶ |
 
 ### Latent features
 A D-dimensional embedding representing the brain health representation space learned by NeuroFM. Useful for downstream tasks including differential diagnosis classification, cognitive score regression, and unsupervised cohort clustering. Extracted from the `multihead_output` layer. The embedding dimension D depends on the model variant (see below).
@@ -226,9 +226,9 @@ For long-term reproducibility and citation in publications, please reference the
 
 ## Finetuning
 
-For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as these are smaller and sufficient in most cases. For finetuning, the full saved model directory is available in the TensorFlow structure and can be loaded via the `finetuning` argument. 
+For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as these are smaller and sufficient in most cases. For finetuning, the full saved model directory is available on HuggingFace. 
 
-For now, finetuning is not officially supported in this repository but may be added at a later date.
+For now, finetuning is not officially supported by this repository but may be added at a later date.
 
 ---
 
