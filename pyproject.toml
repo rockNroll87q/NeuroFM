@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Foundation model for individualized brain health estimation from T1w MRI."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.8,<3.12"
 authors = [
     { name = "Austin Dibble", email = "a.dibble.1@research.gla.ac.uk" },
     { name = "Michele Svanera", email = "michele.svanera@glasgow.ac.uk" }
@@ -29,6 +29,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -78,10 +79,4 @@ include = ["neurofm*"]
 
 [tool.black]
 line-length = 88
-target-version = ["py39" , "py310", "py311"]
-
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-select = ["E", "F", "W", "I"]
-ignore = ["E501"]
+target-version = ["py38" ,"py39" , "py310", "py311"]
