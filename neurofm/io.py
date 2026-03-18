@@ -43,7 +43,7 @@ OUTPUT_MODES = ("flat", "mirror", "summary")
 # Input resolution
 # ---------------------------------------------------------------------------
 
-def resolve_inputs(source: str) -> list[str]:
+def resolve_inputs(source: str, input_col:str = None) -> list[str]:
     """
     Resolve a user-provided source to a flat list of NIfTI file paths.
 
@@ -100,13 +100,13 @@ def _resolve_directory(directory: str) -> list[str]:
     return unique
 
 
-def _resolve_csv(csv_path: str | Path) -> list:
+def _resolve_csv(csv_path: str | Path, input_col:str = "input") -> list:
     df = pd.read_csv(csv_path)
-    if "input" not in df.columns:
+    if input_col not in df.columns:
         raise ValueError(
             f"CSV must contain an 'input' column. Found columns: {list(df.columns)}"
         )
-    paths = df["input"].dropna().tolist()
+    paths = df[input_col].dropna().tolist()
     missing = [p for p in paths if not os.path.isfile(p)]
     if missing:
         logger.warning(
@@ -376,6 +376,7 @@ def save_batch_summary(
     input_paths: list[str|Path],
     output_dir: str | Path,
     requested_outputs: list[str],
+    input_col:str = "input"
 ) -> None:
     """
     Write aggregate outputs across all processed scans:
@@ -410,7 +411,7 @@ def save_batch_summary(
             continue
 
         if "brain_health" in requested_outputs and "brain_health" in result:
-            row = {"input": path}
+            row = {input_col: path}
             row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist(), strict=True)))
             bh_rows.append(row)
 
@@ -431,13 +432,12 @@ def save_batch_summary(
 
         # Index CSV so users can map rows back to input paths
         index_path = output_dir / "latent_embeddings_index.csv"
-        pd.DataFrame({"input": latent_input_paths}).to_csv(index_path, index=False)
+        pd.DataFrame({input_col: latent_input_paths}).to_csv(index_path, index=False)
 
         logger.info(
             f"Latent embeddings written -> {latent_path} "
             f"(shape: {latent_array.shape}), index -> {index_path}"
         )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
