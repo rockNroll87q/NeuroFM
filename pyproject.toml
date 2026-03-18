@@ -46,7 +46,7 @@ dependencies = [
 # Notebook support
 notebooks = [
     "jupyter>=1.0.0",
-    "ipykernel",
+    "ipykernel<6.24.0",
     "matplotlib>=3.7.0",
     "nilearn>=0.10.0",
 ]
@@ -56,7 +56,6 @@ training = [
 ]
 # Full development environment
 dev = [
-    "ipython>=8.0.0",
     "neurofm[notebooks,training]",
     "ruff>=0.1.0",
 ]
