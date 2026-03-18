@@ -46,7 +46,7 @@ dependencies = [
 # Notebook support
 notebooks = [
     "jupyter>=1.0.0",
-    "ipykernel<6.24.0",
+    "ipykernel<=6.23.1",
     "matplotlib>=3.7.0",
     "nilearn>=0.10.0",
 ]
