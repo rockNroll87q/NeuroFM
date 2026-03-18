@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import tensorflow as tf
 
+
 class Plain(tf.keras.layers.Layer):
     """
     VGG-like encoder block for 3D tensors.
@@ -33,7 +34,7 @@ class Plain(tf.keras.layers.Layer):
         downsampling: str = "conv",
         **kwargs,
     ):
-        super(Plain, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.activation = activation
         self.filter_num = filter_num
         self.dropout_rate = dropout_rate
@@ -57,7 +58,7 @@ class Plain(tf.keras.layers.Layer):
                 )
             )
             if bn == "BN":
-                self.convs.add(tf.keras.layers.BatchNormalization())
+                self.convs.add(tf.keras.layers.BatchNormalization(fused=False))
             elif bn == "GN":
                 self.convs.add(
                     tf.keras.layers.GroupNormalization(groups=min(groups, filter_num))
@@ -92,7 +93,7 @@ class Plain(tf.keras.layers.Layer):
         return x
 
     def get_config(self):
-        config = super(Plain, self).get_config()
+        config = super().get_config()
         config.update(
             {
                 "filter_num": self.filter_num,
@@ -135,7 +136,7 @@ class Residual(tf.keras.layers.Layer):
         downsampling: str = "conv",
         **kwargs,
     ):
-        super(Residual, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.activation = activation
         self.filter_num = filter_num
         self.dropout_rate = dropout_rate
@@ -160,7 +161,7 @@ class Residual(tf.keras.layers.Layer):
                 )
             )
             if bn == "BN":
-                self.convs.add(tf.keras.layers.BatchNormalization())
+                self.convs.add(tf.keras.layers.BatchNormalization(fused=False))
             elif bn == "GN":
                 self.convs.add(
                     tf.keras.layers.GroupNormalization(groups=min(groups, filter_num))
@@ -197,7 +198,7 @@ class Residual(tf.keras.layers.Layer):
         return x
 
     def get_config(self):
-        config = super(Residual, self).get_config()
+        config = super().get_config()
         config.update(
             {
                 "filter_num": self.filter_num,
@@ -242,7 +243,7 @@ class BottleNeck(tf.keras.layers.Layer):
         se_ratio: float = 1,
         **kwargs,
     ):
-        super(BottleNeck, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.activation = activation
         self.filter_num = filter_num
         self.dropout_rate = dropout_rate
@@ -296,9 +297,9 @@ class BottleNeck(tf.keras.layers.Layer):
             )
 
         if bn == "BN":
-            self.bn1 = tf.keras.layers.BatchNormalization()
-            self.bn2 = tf.keras.layers.BatchNormalization()
-            self.bn3 = tf.keras.layers.BatchNormalization()
+            self.bn1 = tf.keras.layers.BatchNormalization(fused=False)
+            self.bn2 = tf.keras.layers.BatchNormalization(fused=False)
+            self.bn3 = tf.keras.layers.BatchNormalization(fused=False)
         elif bn == "GN":
             self.bn1 = tf.keras.layers.GroupNormalization(groups=min(groups, filter_num))
             self.bn2 = tf.keras.layers.GroupNormalization(groups=min(groups, filter_num))
@@ -327,7 +328,7 @@ class BottleNeck(tf.keras.layers.Layer):
             )
 
         if bn == "BN":
-            self.downsample.add(tf.keras.layers.BatchNormalization())
+            self.downsample.add(tf.keras.layers.BatchNormalization(fused=False))
         elif bn == "GN":
             self.downsample.add(
                 tf.keras.layers.GroupNormalization(groups=min(groups, filter_num))
@@ -360,7 +361,7 @@ class BottleNeck(tf.keras.layers.Layer):
         return output
 
     def get_config(self):
-        config = super(BottleNeck, self).get_config()
+        config = super().get_config()
         config.update(
             {
                 "filter_num": self.filter_num,

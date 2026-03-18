@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from pathlib import Path
 
 from loguru import logger
 
@@ -139,6 +140,9 @@ def main() -> None:
     if args.verbose:
         logger.remove()
         logger.add(sys.stderr, level="DEBUG")
+    else:
+        logger.remove()
+        logger.add(sys.stderr, level="INFO")
 
     if args.list_variants:
         list_variants()
@@ -146,6 +150,7 @@ def main() -> None:
 
     requested_outputs = [o.strip() for o in args.outputs.split(",")]
     output_root = os.path.expanduser(args.output)
+    output_root = Path(output_root)
 
     # ------------------------------------------------------------------
     # Resolve inputs
@@ -162,6 +167,7 @@ def main() -> None:
     # For mirror mode — find the common root of all inputs so relative
     # paths can be reconstructed correctly
     input_root = infer_input_root(input_paths)
+    input_root = Path(input_root)
 
     # ------------------------------------------------------------------
     # Cache check — split inputs into cached vs needs inference

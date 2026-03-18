@@ -110,14 +110,14 @@ class NeuroFM:
 
         if "brain_health" in outputs:
             try:
-                results["brain_health"] = self._predict_brain_health(volume)
+                results["brain_health"] = self.predict_brain_health(volume)
             except Exception as e:
                 logger.warning(f"Failed to process brain_health for {input_path}: {e}")
                 results["brain_health"] = None
 
         if "latent" in outputs:
             try:
-                results["latent"] = self._predict_latent(volume)
+                results["latent"] = self.predict_latent(volume)
             except Exception as e:
                 logger.warning(f"Failed to process latent for {input_path}: {e}")
                 results["latent"] = None
@@ -165,8 +165,7 @@ class NeuroFM:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _predict_brain_health(self, volume: np.ndarray) -> np.ndarray:
-        logger.debug(volume.shape)
+    def predict_brain_health(self, volume: np.ndarray) -> np.ndarray:
         preds = self._model.predict(volume, verbose=0)
         # preds shape: (1, 4) — squeeze batch dim
 
@@ -185,14 +184,13 @@ class NeuroFM:
 
         # sex is the outlier, it just needs arg-maxed. We will
         # leave the class as a binary int/float
-        logger.debug(_BRAIN_HEALTH_INTERNAL)
         sex_idx = _BRAIN_HEALTH_INTERNAL.index("PatientSex")
         sex_pred = np.argmax(preds[sex_idx])
 
         preds_processed[sex_idx] = sex_pred
         return np.squeeze(preds_processed).astype(np.float32)
 
-    def _predict_latent(self, volume: np.ndarray) -> np.ndarray:
+    def predict_latent(self, volume: np.ndarray) -> np.ndarray:
         if self._latent_model is None:
             self._latent_model = get_mid_layer(
                 self._model, LATENT_LAYER_NAME
