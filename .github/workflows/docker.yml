@@ -79,12 +79,13 @@ jobs:
           echo "Resolved version: $VERSION"
 
       - name: Build and push ${{ matrix.tag }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: ${{ matrix.platforms }}
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+          load: ${{ github.event_name == 'pull_request' }}
           tags: |
             rocknroll87q/neurofm:${{ matrix.tag }}
             rocknroll87q/neurofm:${{ matrix.tag }}-${{ steps.version.outputs.version }}
@@ -95,3 +96,8 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.tag }}
           cache-to: type=gha,mode=max,scope=${{ matrix.tag }}
+
+      - name: Smoke test ${{ matrix.tag }}
+        if: github.event_name == 'pull_request'
+        run: |
+          docker run --rm rocknroll87q/neurofm:${{ matrix.tag }} --help
