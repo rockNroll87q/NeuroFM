@@ -1,7 +1,7 @@
 # Core
 tensorflow==2.13.0
 numpy>=1.23.5,<2.0.0         # TF 2.13 incompatible with numpy 2.0+
-typing-extensions>=3.6.6,<4.6.0  # TF 2.13 upper bound; pydantic v1 and huggingface-hub are compatible within this range
+#typing-extensions>=3.6.6,<4.6.0  # TF 2.13 upper bound; pydantic v1 and huggingface-hub are compatible within this range
 nibabel>=5.0.0
 scipy>=1.10.0
 pandas>=2.0.0

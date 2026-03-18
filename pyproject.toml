@@ -35,7 +35,7 @@ classifiers = [
 dependencies = [
     "tensorflow==2.13.0",
     "numpy>=1.23.5,<2.0.0",
-    "typing-extensions>=3.6.6,<4.6.0",
+    # "typing-extensions>=3.6.6,<4.6.0",
     "nibabel>=5.0.0",
     "scipy>=1.10.0",
     "pandas>=2.0.0",
