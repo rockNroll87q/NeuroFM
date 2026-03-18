@@ -6,10 +6,14 @@ Accepts a single file, directory, or CSV with an 'input' column.
 
 Output modes
 ------------
-flat     All outputs written to a single flat directory. Default.
+flat     All outputs written to a single flat directory. Default. 
+         Note that one subdirectory is created by default: individuals.
+         This contains all individual-image outputs, separate from the 
+         summary files in the output root.
 mirror   Output directory tree mirrors the input directory structure.
 summary  Summary CSV and aggregate latent .npy only — no per-file outputs.
          Useful when disk space is a concern or only aggregate results needed.
+         Individual-level directory by default follows 'flat'.
 
 Caching
 -------
@@ -213,9 +217,14 @@ def get_output_dir(
     output_root: str | Path,
     output_mode: str,
     input_root: str | None = None,
+    individuals_dir: bool = True
 ) -> str:
     """
     Resolve the output directory for a given input file.
+
+    Note that for output_mode of 'flat' or 'summary', the path 'individuals' is added by default.
+    This is to group individual-level outputs within a directory, while the summary files will
+    be saved in the output root. This can be disabled with individuals_dir = False.
 
     Parameters
     ----------
@@ -236,7 +245,10 @@ def get_output_dir(
         Directory where outputs for this input file should be written.
     """
     if output_mode in ("flat", "summary"):
-        return Path(output_root) / 'individuals'
+        if individuals_dir:
+            return Path(output_root) / 'individuals'
+        else:
+            return Path(output_root)
 
     # mirror mode: reconstruct relative path under output_root
     if input_root is None:

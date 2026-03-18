@@ -98,6 +98,7 @@ VARIANT_CONFIGS: dict[str, NetworkConfig] = {
         num_conv_layers=5,
         num_initial_filter=32,
         num_neck_layers=0,
+        neck_layer_size=161,
         dropout_rate=0.1,
     ),
     "neurofm-m": NetworkConfig(
