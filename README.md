@@ -4,7 +4,7 @@ Repository for the paper "NeuroFM: Toward Precision Neuroimaging with Foundation
 
 > **[headline statement]**
 
-📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 📦 [Weights (v0.1.0)]() &nbsp;|&nbsp; 🐳 [Docker]() &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/)
+📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 📦 [Weights (v0.1.0)](https://huggingface.co/NeuroAI-UofG/NeuroFM) &nbsp;|&nbsp; 🐳 [Docker](https://hub.docker.com/r/rocknroll87q/neurofm) &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/)
 
 ---
 
@@ -58,8 +58,7 @@ Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./require
 ```bash
 mamba create -n neurofm python=3.11
 mamba activate neurofm
-pip install "neurofm[notebooks] @ git+https://github.com/rockNroll87q/NeuroFM.git@preprint-prep"
-pip install templateflow==25.1.2 "numpy<=1.24.3" "typing-extensions<4.6.0"
+pip install git+https://github.com/rockNroll87q/NeuroFM.git"
 ```
 
 ### Option 3: Docker *(zero-friction, recommended if you hit dependency issues)*
@@ -204,45 +203,31 @@ A D-dimensional embedding representing the brain health representation space lea
 | `neurofm-m` | 6.5M | 256 | ~44MB | Balanced accuracy/speed |
 | `neurofm-l` | 10.8M | 512 | ~150MB | Maximum accuracy, GPU recommended |
 
-Only the weights for your requested variant are downloaded. All variants are archived on Zenodo; see [Weights & Versioning](#weights--versioning).
+Only the weights for your requested variant are downloaded. See [Weights & Versioning](#weights--versioning).
 
 ---
 
 ## Weights & Versioning
 
-Weights are hosted on [Zenodo]() (canonical, citable) and mirrored on [HuggingFace]() for programmatic access. They are downloaded automatically on first use per variant — no manual steps required.
+Weights are hosted on [HuggingFace]() for programmatic access. They are downloaded automatically on first use per variant — no manual steps required.
 
-| Version | Zenodo DOI | HuggingFace | Notes |
-|---------|------------|-------------|-------|
-| v0.1.0 | [DOI]() | [rocknroll87q/NeuroFM]() | Initial release |
+| Version | HuggingFace | Notes |
+|---------|-------------|-------|
+| v0.1.0 | [NeuroAI-UofG/NeuroFM](https://huggingface.co/NeuroAI-UofG/NeuroFM) | Initial release |
 
-The auto-download pulls from HuggingFace by default. To use the Zenodo URL instead, or to point to a locally downloaded file:
+The auto-download pulls from HuggingFace by default. To point to a locally downloaded file:
 ```bash
 python scripts/run_inference.py --input scan.nii.gz --weights /path/to/weights.h5
 ```
 
-For long-term reproducibility and citation in publications, please reference the Zenodo DOI rather than the HuggingFace mirror.
-
+For long-term reproducibility and citation in publications, please reference the bioarxiv rather than the HuggingFace mirror.
 ---
 
 ## Finetuning
 
-For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as these are smaller and sufficient in most cases. For finetuning, the full saved model directory is available on HuggingFace. 
+For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as these are smaller and sufficient in most cases. For finetuning, the full saved model directory is available on HuggingFace. Finetuning is likely needed for inference tasks on other MRI modalities (T2-weighted, for example).
 
 For now, finetuning is not officially supported by this repository but may be added at a later date.
-
----
-
-## System requirements
-
-| | Minimum | Recommended |
-|-|---------|-------------|
-| Python | 3.9 | 3.10 |
-| RAM | 4GB | 8GB |
-| GPU | — | NVIDIA, 4GB VRAM |
-| OS | Linux, macOS, Windows | Linux |
-
-GPU is optional but recommended for `neurofm-l` and large cohorts. Approximate CPU inference time per scan: [X sec] (neurofm-s), [X sec] (neurofm-m), [X sec] (neurofm-l).
 
 ---
 
@@ -258,7 +243,7 @@ If the list is empty, check your CUDA/cuDNN versions against the [TF 2.13 compat
 The Docker and Singularity containers will crash with `Illegal Instruction` on Apple Silicon — `tensorflow:2.13.0` is compiled with AVX2/AVX-512 instructions that Rosetta 2 does not fully emulate. Use a local conda environment instead:
  
 ```bash
-mamba create -n neurofm python=3.10
+mamba create -n neurofm python=3.11
 mamba activate neurofm
 pip install tensorflow-macos==2.13.0
 pip install tensorflow-metal        # optional — enables GPU via Metal
