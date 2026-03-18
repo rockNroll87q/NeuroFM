@@ -173,7 +173,7 @@ class NeuroFM:
     # ------------------------------------------------------------------
 
     def predict_brain_health(self, volume: np.ndarray) -> np.ndarray:
-        preds = self._model.predict(volume, verbose=0)
+        preds = self._model(volume, training=False)
         # preds shape: (1, 4) — squeeze batch dim
 
         # initialize before populating
@@ -202,7 +202,7 @@ class NeuroFM:
             self._latent_model = get_mid_layer(
                 self._model, LATENT_LAYER_NAME
             )
-        embedding = self._latent_model.predict(volume, verbose=False)
+        embedding = self._latent_model(volume, training=False)
         return np.squeeze(embedding).astype(np.float32)
 
     def _unstandardize(self, value, var_name):
