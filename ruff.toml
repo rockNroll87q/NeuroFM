@@ -33,7 +33,7 @@ line-length = 120
 indent-width = 4
 
 # Assume Python 3.11
-target-version = "py311"
+target-version = "py38"
 
 [lint]
 select = [
@@ -56,6 +56,9 @@ ignore = [
     "D210", # No whitespaces allowed surrounding docstring text
     "D205",
     "D202",
+    "UP006",
+    "UP035",
+    "UP045"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

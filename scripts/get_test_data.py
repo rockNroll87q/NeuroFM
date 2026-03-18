@@ -30,6 +30,7 @@ import argparse
 import os
 import shutil
 import sys
+from typing import List
 
 import nibabel as nib
 import numpy as np
@@ -74,7 +75,7 @@ def parse_args():
 # Template mode — MNI152 via TemplateFlow
 # ---------------------------------------------------------------------------
 
-def fetch_template(output_dir: str, n: int) -> list[str]:
+def fetch_template(output_dir: str, n: int) -> List[str]:
     """
     Download the MNI152NLin2009cAsym 1mm skull-stripped T1w template.
 
@@ -126,7 +127,7 @@ def fetch_template(output_dir: str, n: int) -> list[str]:
 # Synthetic mode — noise volume in MNI space
 # ---------------------------------------------------------------------------
 
-def generate_synthetic(output_dir: str, n: int) -> list[str]:
+def generate_synthetic(output_dir: str, n: int) -> List[str]:
     """
     Generate a synthetic skull-shaped volume filled with structured noise.
 
@@ -194,7 +195,7 @@ def _make_synthetic_volume(shape: tuple) -> np.ndarray:
 # CSV helper — optional, generates a subjects.csv for batch testing
 # ---------------------------------------------------------------------------
 
-def write_test_csv(paths: list[str], output_dir: str) -> str:
+def write_test_csv(paths: List[str], output_dir: str) -> str:
     """Write a subjects.csv pointing at the generated test volumes."""
     import pandas as pd
     csv_path = os.path.join(output_dir, "subjects.csv")

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 neurofm/weights.py
 
@@ -8,6 +9,7 @@ for programmatic access.
 from __future__ import annotations
 
 import os
+from typing import Optional
 
 from huggingface_hub import hf_hub_download
 from loguru import logger
@@ -51,7 +53,7 @@ VARIANTS = {
 def get_weights_path(
     variant: str = DEFAULT_VARIANT,
     cache_dir: str = DEFAULT_CACHE_DIR,
-    local_path: str | None = None,
+    local_path: Optional[str] = None,
 ) -> str:
     """
     Resolve the path to model weights for a given variant.

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 NeuroFM: Foundation model for individualized brain health estimation from T1w MRI.
 

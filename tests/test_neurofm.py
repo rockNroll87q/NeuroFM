@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 tests/test_neurofm.py
 
@@ -11,6 +12,7 @@ and verify output shapes and types are correct.
 Run with:
     python -m unittest tests/test_neurofm.py -v
 """
+from __future__ import annotations
 
 import os
 import sys

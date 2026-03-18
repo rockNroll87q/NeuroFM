@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
 """
 neurofm/inference.py
 
 Core inference logic. The NeuroFM class is the primary user-facing API.
 """
 from __future__ import annotations
+
+from typing import List, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -53,7 +56,7 @@ class NeuroFM:
         self,
         variant: str = DEFAULT_VARIANT,
         device: str = "auto",
-        weights: str | None = None,
+        weights: Optional[str] = None,
         cache_dir: str = "~/.cache/NeuroFM",
         standardization_constants: dict = DEFAULT_STD_CONSTS,
         custom_preproc_fn = None,
@@ -83,7 +86,7 @@ class NeuroFM:
     def predict(
         self,
         input_path: str,
-        outputs: list[str] | None = None,
+        outputs: List[str] = None,
     ) -> dict:
         """
         Run inference on a single NIfTI file.
@@ -133,9 +136,9 @@ class NeuroFM:
 
     def predict_batch(
         self,
-        input_paths: list[str],
-        outputs: list[str] | None = None,
-    ) -> list[dict]:
+        input_paths: List[str],
+        outputs: List[str] = None,
+    ) -> List[dict]:
         """
         Run inference on a list of NIfTI files sequentially.
 
@@ -284,7 +287,7 @@ def _active_device() -> str:
 # Validation
 # ---------------------------------------------------------------------------
 
-def _validate_outputs(outputs: list[str]) -> None:
+def _validate_outputs(outputs: List[str]) -> None:
     """Make sure that the selected output options are valid."""
     invalid = set(outputs) - VALID_OUTPUTS
     if invalid:

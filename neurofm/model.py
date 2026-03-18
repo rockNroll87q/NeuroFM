@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 neurofm/model.py
 
@@ -10,7 +11,7 @@ pretrained weights.
 """
 from __future__ import annotations
 
-from typing import Literal
+from typing import Dict, List, Literal
 
 import tensorflow as tf
 from loguru import logger
@@ -79,8 +80,8 @@ class NetworkConfig(BaseModel):
     neck_layer_size: int = 512
 
     # Output head
-    num_classes: list[int] = [1, 2, 1, 1]       # one per predicted variable
-    predicted_variable: list[str] = BRAIN_HEALTH_KEYS
+    num_classes: List[int] = [1, 2, 1, 1]       # one per predicted variable
+    predicted_variable: List[str] = BRAIN_HEALTH_KEYS
     dense_predictors: bool = False
     num_dense_predictor_layers: int = 1
     dense_predictor_size: int = 128
@@ -92,7 +93,7 @@ class NetworkConfig(BaseModel):
 # These must exactly match the hyperparameters used during pretraining.
 # Changing any value will produce incorrect outputs with the released weights.
 
-VARIANT_CONFIGS: dict[str, NetworkConfig] = {
+VARIANT_CONFIGS: Dict[str, NetworkConfig] = {
     "neurofm-s": NetworkConfig(
         num_conv_layers=5,
         num_initial_filter=32,

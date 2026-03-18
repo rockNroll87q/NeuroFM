@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 neurofm/io.py
 
@@ -26,6 +27,7 @@ from __future__ import annotations
 import os
 from glob import glob
 from pathlib import Path
+from typing import List, Optional
 
 import nibabel as nib
 import numpy as np
@@ -43,7 +45,7 @@ OUTPUT_MODES = ("flat", "mirror", "summary")
 # Input resolution
 # ---------------------------------------------------------------------------
 
-def resolve_inputs(source: str, input_col:str = None) -> list[str]:
+def resolve_inputs(source: str, input_col:str = None) -> List[str]:
     """
     Resolve a user-provided source to a flat list of NIfTI file paths.
 
@@ -77,7 +79,7 @@ def resolve_inputs(source: str, input_col:str = None) -> list[str]:
     return paths
 
 
-def _resolve_single(path: str | Path) -> list[str]:
+def _resolve_single(path) -> List[str]:
     """Give us the absolute path to the given input path as an array, 
     to fit with the expected formatting.
     """
@@ -89,7 +91,7 @@ def _resolve_single(path: str | Path) -> list[str]:
     return [Path(os.path.abspath(path))]
 
 
-def _resolve_directory(directory: str) -> list[str]:
+def _resolve_directory(directory: str) -> List[str]:
     """Get all the relevant .nii.gz files in the directory."""
     paths = []
     for ext in SUPPORTED_EXTENSIONS:
@@ -104,7 +106,7 @@ def _resolve_directory(directory: str) -> list[str]:
     return unique
 
 
-def _resolve_csv(csv_path: str | Path, input_col:str = "input") -> list:
+def _resolve_csv(csv_path, input_col:str = "input") -> list:
     """Get the paths from the given .csv file. Returns the discovered paths as a list."""
     df = pd.read_csv(csv_path)
     if input_col not in df.columns:
@@ -236,10 +238,10 @@ def _normalize(data: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def get_output_dir(
-    input_path: str | Path,
-    output_root: str | Path,
+    input_path,
+    output_root,
     output_mode: str,
-    input_root: str | None = None,
+    input_root: Optional[str] = None,
     individuals_dir: bool = True
 ) -> str:
     """
@@ -290,10 +292,10 @@ def get_output_dir(
 
 
 def get_expected_output_path(
-    input_path: str | Path,
-    output_root: str | Path,
-    output_mode: str | Path,
-    input_root: str | None = None,
+    input_path,
+    output_root,
+    output_mode,
+    input_root:Optional[str] = None,
 ) -> str:
     """
     Return the expected path of the brain_health .npy for a given input.
@@ -309,12 +311,12 @@ def get_expected_output_path(
 # ---------------------------------------------------------------------------
 
 def load_cached_result(
-    input_path: str | Path,
-    output_root: str | Path,
-    output_mode: str | Path,
-    requested_outputs: list[str],
-    input_root: str | None = None,
-) -> dict | None:
+    input_path,
+    output_root,
+    output_mode,
+    requested_outputs: List[str],
+    input_root: Optional[str] = None,
+):
     """
     Attempt to load previously saved outputs for a given input file.
 
@@ -349,11 +351,11 @@ def load_cached_result(
 
 def save_outputs(
     results: dict,
-    input_path: str | Path,
-    output_root: str | Path,
-    requested_outputs: list[str],
+    input_path,
+    output_root,
+    requested_outputs: List[str],
     output_mode: str = "flat",
-    input_root: str | Path | None = None,
+    input_root = None,
 ) -> None:
     """
     Save per-file model outputs to disk.
@@ -393,12 +395,11 @@ def save_outputs(
         np.save(lat_path, results["latent"])
         logger.debug(f"Saved latent -> {lat_path}")
 
-
 def save_batch_summary(
-    all_results: list[dict],
-    input_paths: list[str|Path],
-    output_dir: str | Path,
-    requested_outputs: list[str],
+    all_results: List[dict],
+    input_paths: list,
+    output_dir,
+    requested_outputs: List[str],
     input_col:str = "input"
 ) -> None:
     """
@@ -465,7 +466,7 @@ def save_batch_summary(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def _get_stem(path: str | Path) -> str:
+def _get_stem(path) -> str:
     """Strip directory and NIfTI extensions to get a clean filename stem."""
     base = Path(path).name
     for ext in (".nii.gz", ".nii"):
@@ -473,7 +474,7 @@ def _get_stem(path: str | Path) -> str:
             return base[: -len(ext)]
     return base
 
-def infer_input_root(input_paths: list) -> Path | None:
+def infer_input_root(input_paths: list) -> Path:
     """
     For mirror mode — find the common directory prefix across all input paths.
     Returns None if inputs come from completely different trees.
