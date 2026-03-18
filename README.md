@@ -137,15 +137,14 @@ Defaults to `auto` (uses GPU if available, falls back to CPU). Force CPU with `-
 --outputs        Comma-separated list of outputs: brain_health,latent (default: brain_health)
 --device         Device: auto (default), cpu, gpu
 --weights        Path to local weights file (overrides automatic download)
---batch-size     Number of scans to process in parallel (default: 1)
 ```
 
 ### Python API
 ```python
-from neurofm import InferenceEngine
+from neurofm import NeuroFM
 
-engine = InferenceEngine(model="neurofm-s", device="auto")
-results = engine.predict("subject_01_T1w.nii.gz", outputs=["brain_health", "latent"])
+model = NeuroFM(model="neurofm-s", device="auto")
+results = model.predict("subject_01_T1w.nii.gz", outputs=["brain_health", "latent"])
 
 results["brain_health"]  # np.ndarray, shape (4,) — [brain_age, brain_vol, ventricle_vol, sex]
 results["latent"]        # np.ndarray, shape (D,)
@@ -270,7 +269,7 @@ python scripts/run_inference.py --input scan.nii.gz --output ./results/ --device
 ```
 
 **Out of memory on GPU**
-Switch to a smaller variant (`--model neurofm-s`), use `--device cpu`, or try a smaller batch size.
+Switch to a smaller variant (`--model neurofm-s`), or use `--device cpu`.
 
 **Reorientation warnings**
 If your data is in an unusual orientation and automatic reorientation fails, you may get a warning. Results may still be usable but accuracy can degrade — we recommend preprocessing to LIA orientation using `fslreorient2std` or equivalent.
