@@ -45,8 +45,8 @@ dependencies = [
 [project.optional-dependencies]
 # Notebook support
 notebooks = [
-    "jupyter>=1.0.0",
-    "ipykernel<=6.21.1",
+    "ipython<=8.8.0",
+    "ipykernel<6.21.1",
     "matplotlib>=3.7.0",
     "nilearn>=0.10.0",
 ]
