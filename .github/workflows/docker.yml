@@ -43,15 +43,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
+      # Uncomment if disk space is an issue during builds
+      # - name: Free disk space
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true
+      #     swap-storage: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
