@@ -254,7 +254,7 @@ class TestModelConstruction(unittest.TestCase):
             neck_layer_size=16,
         )
         model = build_model(config)
-        layer_names = [l.name for l in model.layers]
+        layer_names = [layer.name for layer in model.layers]
         self.assertIn("multihead_output", layer_names)
 
 

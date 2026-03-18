@@ -169,10 +169,27 @@ class NeuroFM:
         return all_results
 
     # ------------------------------------------------------------------
-    # Private helpers
+    # Helpers
     # ------------------------------------------------------------------
 
     def predict_brain_health(self, volume: np.ndarray) -> np.ndarray:
+        """
+        Run brain health inference on a NIfTI image array directly, presumably loaded by nibabel.
+
+        Returns a resulting array from the model, with the brain health features. 
+        Returned outputs are scaled to the appropriate ranges, not z-scored.
+
+        Parameters
+        ----------
+        volume : np.ndarray
+            Input nibabel volume
+
+        Returns
+        -------
+        np.ndarray (1, 4) float32
+            Brain health value predictions for the volume.
+            Order is: age, sex, ventricle volume, brain volume.
+        """
         preds = self._model(volume, training=False)
         # preds shape: (1, 4) — squeeze batch dim
 
@@ -198,6 +215,22 @@ class NeuroFM:
         return np.squeeze(preds_processed).astype(np.float32)
 
     def predict_latent(self, volume: np.ndarray) -> np.ndarray:
+        """
+        Run latent inference on a NIfTI image array directly, presumably loaded by nibabel.
+
+        Returns a resulting latent embedding array from the model. Output dimensionality
+        depends on the selected model variant.
+
+        Parameters
+        ----------
+        volume : np.ndarray
+            Input nibabel volume
+
+        Returns
+        -------
+        np.ndarray (1, D) float32
+            Latent embedding predictions for the volume.
+        """
         if self._latent_model is None:
             self._latent_model = get_mid_layer(
                 self._model, LATENT_LAYER_NAME
@@ -206,6 +239,9 @@ class NeuroFM:
         return np.squeeze(embedding).astype(np.float32)
 
     def _unstandardize(self, value, var_name):
+        """
+        Rescales the given output variable by the fixed scaling constants.
+        """
         mu = self.std_consts[var_name]['mean']
         std = self.std_consts[var_name]['std']
         return (value * std) + mu
@@ -239,6 +275,7 @@ def _configure_device(device: str) -> None:
 
 
 def _active_device() -> str:
+    """Get the active device, gpu if available."""
     gpus = tf.config.get_visible_devices("GPU")
     return f"GPU ({gpus[0].name})" if gpus else "CPU"
 
@@ -248,6 +285,7 @@ def _active_device() -> str:
 # ---------------------------------------------------------------------------
 
 def _validate_outputs(outputs: list[str]) -> None:
+    """Make sure that the selected output options are valid."""
     invalid = set(outputs) - VALID_OUTPUTS
     if invalid:
         raise ValueError(

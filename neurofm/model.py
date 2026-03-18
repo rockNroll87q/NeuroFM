@@ -35,7 +35,6 @@ _BRAIN_HEALTH_INTERNAL = ["PatientAge", "PatientSex", "ventricular_volume", "bra
 # # User-facing column names in all output CSVs and .npy files.
 BRAIN_HEALTH_KEYS = ["brain_age", "sex", "ventricle_volume", "brain_volume"]
  
-
 # ---------------------------------------------------------------------------
 # Network configuration
 # ---------------------------------------------------------------------------
@@ -228,6 +227,15 @@ def build_model(config: NetworkConfig) -> Model:
     return Model(input_layer, output_layer)
 
 def _build_encoder_layers(config: NetworkConfig, x):
+    """Build NeuroFM's CNN encoder layers
+
+    Args:
+        config (NetworkConfig): given network configuration object which defines network structure
+        x: model state
+
+    Returns:
+        model state
+    """
     with tf.name_scope("Encoder"):
         for f in range(config.num_conv_layers):
             filter_mult = (2 ** f) if config.conv_block == "Residual" else (f + 1)
@@ -262,6 +270,15 @@ def _build_encoder_layers(config: NetworkConfig, x):
 
 
 def _build_dense_pooling_layers(config: NetworkConfig, x):
+    """Build NeuroFM's transition layer from encoder to predictor or neck
+
+    Args:
+        config (NetworkConfig): given network configuration object which defines network structure
+        x: model state
+
+    Returns:
+        model state
+    """
     if config.final_stage == "dense":
         x = Flatten()(x)
         with tf.name_scope("FC"):
@@ -283,6 +300,15 @@ def _build_dense_pooling_layers(config: NetworkConfig, x):
 
 
 def _build_neck_layers(config: NetworkConfig, x):
+    """Build NeuroFM's fully connected 'neck' layers
+
+    Args:
+        config (NetworkConfig): given network configuration object which defines network structure
+        x: model state
+
+    Returns:
+        model state
+    """
     with tf.name_scope("Neck"):
         for n in range(config.num_neck_layers):
             x = Dense(
@@ -296,6 +322,15 @@ def _build_neck_layers(config: NetworkConfig, x):
 
 
 def _build_output_layers(config: NetworkConfig, x):
+    """Build NeuroFM's fully connected 'output' layers
+
+    Args:
+        config (NetworkConfig): given network configuration object which defines network structure
+        x: model state
+
+    Returns:
+        model state
+    """
     output_layers = []
     # Latent feature extraction point — named layer referenced in inference.py
     x_multihead = tf.keras.layers.Layer(name="multihead_output")(x)
@@ -331,6 +366,7 @@ def _build_output_layers(config: NetworkConfig, x):
 # ---------------------------------------------------------------------------
 
 def _count_params(model: Model) -> int:
+    """Count the model params"""
     return int(sum(tf.size(w).numpy() for w in model.trainable_weights))
 
 def get_mid_layer(model, layer_name):

@@ -41,6 +41,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # ---------------------------------------------------------------------------
 
 def parse_args():
+    """Get our argument parser"""
     parser = argparse.ArgumentParser(
         description="Fetch or generate test NIfTI data for NeuroFM debugging.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -208,6 +209,7 @@ def write_test_csv(paths: list[str], output_dir: str) -> str:
 # ---------------------------------------------------------------------------
 
 def main():
+    """Main"""
     args = parse_args()
 
     print("\nNeuroFM test data utility")

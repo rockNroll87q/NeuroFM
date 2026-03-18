@@ -78,6 +78,9 @@ def resolve_inputs(source: str, input_col:str = None) -> list[str]:
 
 
 def _resolve_single(path: str | Path) -> list[str]:
+    """Give us the absolute path to the given input path as an array, 
+    to fit with the expected formatting.
+    """
     path = Path(path)
     if not any(path.name.endswith(ext) for ext in SUPPORTED_EXTENSIONS):
         raise ValueError(
@@ -87,6 +90,7 @@ def _resolve_single(path: str | Path) -> list[str]:
 
 
 def _resolve_directory(directory: str) -> list[str]:
+    """Get all the relevant .nii.gz files in the directory."""
     paths = []
     for ext in SUPPORTED_EXTENSIONS:
         pattern = os.path.join(directory, "**", f"*{ext}")
@@ -101,10 +105,11 @@ def _resolve_directory(directory: str) -> list[str]:
 
 
 def _resolve_csv(csv_path: str | Path, input_col:str = "input") -> list:
+    """Get the paths from the given .csv file. Returns the discovered paths as a list."""
     df = pd.read_csv(csv_path)
     if input_col not in df.columns:
         raise ValueError(
-            f"CSV must contain an 'input' column. Found columns: {list(df.columns)}"
+            f"CSV must contain an '{input_col}' column. Found columns: {list(df.columns)}"
         )
     paths = df[input_col].dropna().tolist()
     missing = [p for p in paths if not os.path.isfile(p)]
@@ -122,10 +127,9 @@ def _resolve_csv(csv_path: str | Path, input_col:str = "input") -> list:
 # Preprocessing
 # ---------------------------------------------------------------------------
 
-TARGET_SHAPE = (256, 256, 256)
-TARGET_ZOOMS = (1.0, 1.0, 1.0)
-TARGET_ORIENTATION = "LIA"
-
+TARGET_SHAPE = (256, 256, 256) # Model input shape is fixed 256^3, so we pad
+TARGET_ZOOMS = (1.0, 1.0, 1.0) # We want the MRI in 1mm iso
+TARGET_ORIENTATION = "LIA" # all brains should be conformed to LIA, which was the training space
 
 def load_and_preprocess(path: str, custom_preproc_fn = None) -> np.ndarray:
     """
@@ -154,6 +158,14 @@ def load_and_preprocess(path: str, custom_preproc_fn = None) -> np.ndarray:
 
 
 def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
+    """Reorient the given nifti image into the correct orientation space, as needed.
+
+    Args:
+        img (nib.Nifti1Image): Input volume
+
+    Returns:
+        nib.Nifti1Image: Reoriented volume.
+    """
     current_codes = nib.aff2axcodes(img.affine)
     current_orientation = "".join(current_codes)
 
@@ -177,6 +189,14 @@ def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
 
 
 def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
+    """Resample given nifti volume into the correct iso resolution.
+
+    Args:
+        img (nib.Nifti1Image): Input nifti image
+
+    Returns:
+        nib.Nifti1Image: Resampled nifti image
+    """
     current_zooms = tuple(float(z) for z in img.header.get_zooms()[:3])
     current_shape = img.shape[:3]
 
@@ -207,6 +227,7 @@ def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
 
 
 def _normalize(data: np.ndarray) -> np.ndarray:
+    """z-score for our volumes. Same as during training"""
     return stats.zscore(data, axis=None)
 
 

@@ -56,6 +56,7 @@ from neurofm.weights import DEFAULT_VARIANT, list_variants
 
 
 def parse_args() -> argparse.Namespace:
+    """Get our arg parser"""
     parser = argparse.ArgumentParser(
         description="NeuroFM — Foundation model inference for T1w MRI.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -135,6 +136,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    """Main"""
     args = parse_args()
 
     if args.verbose:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import tensorflow as tf
 
+
 def huber_loss(delta=1.0):
     """Returns a Huber loss function with the specified delta."""
     def loss(y_true, y_pred):

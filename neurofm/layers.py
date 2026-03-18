@@ -46,7 +46,7 @@ class Plain(tf.keras.layers.Layer):
         kernel_reg = tf.keras.regularizers.l2(kernel_regularizer)
 
         self.convs = tf.keras.Sequential()
-        for i in range(n_conv_row):
+        for _i in range(n_conv_row):
             self.convs.add(
                 tf.keras.layers.Conv3D(
                     filters=filter_num,
@@ -85,6 +85,7 @@ class Plain(tf.keras.layers.Layer):
         self.dropout = tf.keras.layers.Dropout(rate=dropout_rate)
 
     def __call__(self, inputs, training=None, **kwargs):
+        """Run forward pass."""
         x = self.convs(inputs, training=training)
         if training:
             x = self.dropout(x)
@@ -93,6 +94,7 @@ class Plain(tf.keras.layers.Layer):
         return x
 
     def get_config(self):
+        """Get layer config"""
         config = super().get_config()
         config.update(
             {
@@ -109,6 +111,7 @@ class Plain(tf.keras.layers.Layer):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
+        """From given config"""
         return cls(**config)
 
 
@@ -189,6 +192,7 @@ class Residual(tf.keras.layers.Layer):
         self.dropout = tf.keras.layers.Dropout(rate=dropout_rate)
 
     def call(self, inputs, training=None, **kwargs):
+        """Run forward pass."""
         x = self.convs(inputs)
         x = tf.keras.layers.add([inputs, x])
         x = self.downsampling(x)
@@ -198,6 +202,7 @@ class Residual(tf.keras.layers.Layer):
         return x
 
     def get_config(self):
+        """Get layer config"""
         config = super().get_config()
         config.update(
             {
@@ -214,6 +219,7 @@ class Residual(tf.keras.layers.Layer):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
+        """Create from a given config"""
         return cls(**config)
 
 
@@ -335,6 +341,8 @@ class BottleNeck(tf.keras.layers.Layer):
             )
 
     def call(self, inputs, training=None, **kwargs):
+        """Run forward pass."""
+
         residual = self.downsample(inputs)
 
         x = self.conv1(inputs)
@@ -405,7 +413,7 @@ class SqueezeExcitation(tf.keras.layers.Layer):
         round_down_protect=True,
         **kwargs,
     ):
-        super(SqueezeExcitation, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._in_filters = in_filters
         self._out_filters = out_filters
         self._se_ratio = se_ratio
@@ -433,6 +441,7 @@ class SqueezeExcitation(tf.keras.layers.Layer):
         min_value=None,
         round_down_protect: bool = True,
     ) -> int:
+        """Correction from the original implementations"""
         if min_value is None:
             min_value = divisor
         new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
@@ -441,6 +450,7 @@ class SqueezeExcitation(tf.keras.layers.Layer):
         return int(new_value)
 
     def build(self, input_shape):
+        """Build layer layers"""
         num_reduced_filters = SqueezeExcitation.make_divisible(
             max(1, int(self._in_filters * self._se_ratio)),
             divisor=self._divisible_by,
@@ -466,16 +476,19 @@ class SqueezeExcitation(tf.keras.layers.Layer):
             kernel_regularizer=self._kernel_regularizer,
             bias_regularizer=self._bias_regularizer,
         )
-        super(SqueezeExcitation, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs):
+        """Run forward pass."""
+
         x = tf.reduce_mean(inputs, self._spatial_axis, keepdims=True)
         x = self._activation_fn(self._se_reduce(x))
         x = self._gating_activation_fn(self._se_expand(x))
         return x * inputs
 
     def get_config(self):
-        config = super(SqueezeExcitation, self).get_config()
+        """Get default configuration"""
+        config = super().get_config()
         config.update(
             {
                 "in_filters": self._in_filters,
@@ -500,7 +513,7 @@ class SqueezeExcitation(tf.keras.layers.Layer):
 
 _CONV_BLOCKS = {
     "Plain": Plain,
-    "BottleNeck": BottleNeck,
+    "BottleNeck": BottleNeck, # The one we used for NeuroFM
     "Residual": Residual,
 }
 

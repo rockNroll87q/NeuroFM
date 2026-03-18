@@ -102,6 +102,7 @@ def get_weights_path(
 
 
 def _validate_variant(variant: str) -> None:
+    """Ensure the selected variant exists"""
     if variant not in VARIANTS:
         valid = ", ".join(VARIANTS.keys())
         raise ValueError(
