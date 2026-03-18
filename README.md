@@ -54,10 +54,10 @@ pip install git+https://github.com/rockNroll87q/NeuroFM.git
 ```
 Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./requirements.txt) for full dependencies.
 
-### Option 2: Conda
+### Option 2: Miniforge
 ```bash
-conda env create -f environment.yml
-conda activate neurofm
+mamba env create -f environment.yml
+mamba activate neurofm
 ```
 
 ### Option 3: Docker *(zero-friction, recommended if you hit dependency issues)*

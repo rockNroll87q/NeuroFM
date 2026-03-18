@@ -1,7 +1,6 @@
 name: neurofm
 # Recommended installer: Miniforge (free, no Anaconda license required)
 #   https://github.com/conda-forge/miniforge
-#   brew install miniforge    # macOS via Homebrew
 #   mamba env create -f environment.yml
 channels:
   - conda-forge
@@ -17,12 +16,12 @@ dependencies:
   - pip:
     - tensorflow==2.13.0
     - numpy>=1.23.5,<2.0.0
+    - typing-extensions>=3.6.6,<4.6.0
     - nibabel>=5.0.0
     - scipy>=1.10.0
     - pandas>=2.0.0
-    - opencv-python>=4.7.0
-    - huggingface_hub>=0.20.0
-    - pydantic>=2.0.0
+    - huggingface_hub>=0.20.0,<0.24.0
+    - pydantic>=1.10,<2.0
     - typeguard>=4.0.0
     - loguru>=0.7.0
     - -e .   # install NeuroFM itself in editable mode
