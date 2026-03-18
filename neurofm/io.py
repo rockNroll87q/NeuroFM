@@ -127,7 +127,7 @@ TARGET_ZOOMS = (1.0, 1.0, 1.0)
 TARGET_ORIENTATION = "LIA"
 
 
-def load_and_preprocess(path: str) -> np.ndarray:
+def load_and_preprocess(path: str, custom_preproc_fn = None) -> np.ndarray:
     """
     Load a NIfTI file, apply orientation correction and resampling,
     and return a preprocessed numpy array ready for model input.
@@ -147,6 +147,8 @@ def load_and_preprocess(path: str) -> np.ndarray:
     img = _reorient(img)
     img = _resample(img)
     data = img.get_fdata(dtype=np.float32)
+    if custom_preproc_fn is not None:
+        data = custom_preproc_fn(data)
     data = _normalize(data)
     return data[np.newaxis, ..., np.newaxis]  # (1, X, Y, Z, 1)
 

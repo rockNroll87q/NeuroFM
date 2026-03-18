@@ -56,13 +56,15 @@ class NeuroFM:
         weights: str | None = None,
         cache_dir: str = "~/.cache/NeuroFM",
         standardization_constants: dict = DEFAULT_STD_CONSTS,
-        custom_preproc_fn = None
+        custom_preproc_fn = None,
+        custom_postproc_fn = None,
     ):
         self.variant = variant
         self.device = device
         self._latent_dim = VARIANTS[variant]["latent_dim"]
         self.std_consts = DEFAULT_STD_CONSTS
         self.custom_preproc_fn = custom_preproc_fn
+        self.custom_postproc_fn = custom_postproc_fn
 
         _configure_device(device)
 
@@ -106,10 +108,10 @@ class NeuroFM:
 
         _validate_outputs(outputs)
 
-        volume = load_and_preprocess(input_path)
+        volume = load_and_preprocess(input_path, self.custom_preproc_fn)
 
-        if self.custom_preproc_fn is not None:
-            volume = self.custom_preproc_fn(volume)
+        if self.custom_postproc_fn is not None:
+            volume = self.custom_postproc_fn(volume)
 
         results = {}
 

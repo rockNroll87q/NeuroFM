@@ -56,8 +56,10 @@ Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./require
 
 ### Option 2: Miniforge
 ```bash
-mamba env create -f environment.yml
+mamba create -n neurofm python=3.11
 mamba activate neurofm
+pip install "neurofm[notebooks] @ git+https://github.com/rockNroll87q/NeuroFM.git@preprint-prep"
+pip install templateflow==25.1.2 "numpy<=1.24.3" "typing-extensions<4.6.0"
 ```
 
 ### Option 3: Docker *(zero-friction, recommended if you hit dependency issues)*
