@@ -1,0 +1,32 @@
+name: Check version sync
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "version.txt"
+      - "pyproject.toml"
+
+jobs:
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check version.txt matches pyproject.toml
+        run: |
+          PYPROJECT_VERSION=$(grep '^version' pyproject.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+          VERSION_TXT=$(cat version.txt | tr -d '[:space:]')
+
+          echo "pyproject.toml : $PYPROJECT_VERSION"
+          echo "version.txt    : $VERSION_TXT"
+
+          if [ "$PYPROJECT_VERSION" != "$VERSION_TXT" ]; then
+            echo ""
+            echo "Version mismatch — please update both files to the same version."
+            exit 1
+          fi
+
+          echo "Version check passed: $PYPROJECT_VERSION"
