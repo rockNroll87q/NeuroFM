@@ -1,10 +1,10 @@
 # NeuroFM
 
-Repository for the paper "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
+This is the official repository for the paper "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation".
 
-> **[headline statement]**
+> **NeuroFM is a foundation model trained exclusively on healthy brains that organizes structural MRI into population-level representations of brain health, transferring across five neuroscience domains and supporting individual-level profiling without ever seeing a diagnostic label.**
 
-📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 📦 [Weights (v0.1.0)](https://huggingface.co/NeuroAI-UofG/NeuroFM) &nbsp;|&nbsp; 🐳 [Docker](https://hub.docker.com/r/rocknroll87q/neurofm) &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/)
+📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 🖥️ [Website](https://rocknroll87q.github.io/NeuroFM/) &nbsp;|&nbsp; 📦 [Weights (v0.1.0)](https://huggingface.co/NeuroAI-UofG/NeuroFM) &nbsp;|&nbsp; 🐳 [Docker](https://hub.docker.com/r/rocknroll87q/neurofm) &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/) 
 
 ---
 
