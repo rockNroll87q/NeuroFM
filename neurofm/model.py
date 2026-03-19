@@ -9,9 +9,7 @@ architectures, resume training) has been intentionally stripped. This
 module contains only what is needed to construct the model and load
 pretrained weights.
 """
-from __future__ import annotations
-
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Tuple
 
 import tensorflow as tf
 from loguru import logger
@@ -50,7 +48,7 @@ class NetworkConfig(BaseModel):
     """
 
     # Input
-    shape: tuple[int, int, int] = (256, 256, 256)
+    shape: Tuple[int, int, int] = (256, 256, 256)
 
     # Encoder
     conv_block: Literal["Plain", "BottleNeck", "Residual"] = "BottleNeck"
