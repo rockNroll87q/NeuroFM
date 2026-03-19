@@ -1,7 +1,5 @@
 # Models
 
----
-
 ### Model variants
 
 | Variant | Params | Latent dim | Weights (.h5) | Use case |

@@ -1,7 +1,5 @@
 # Usage examples and full options
 
----
-
 Here is a more extensive glossary of usage examples, and the full table of options for `run_inference.py` is given at the bottom.
 
 ### Directory of scans

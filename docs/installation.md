@@ -1,7 +1,5 @@
 # Installation instructions
 
----
-
 NeuroFM can be installed or used via the following options. We recommend installing via pip, but if you have docker that may be the easiest and fastest method.
 
 ### Option 1: pip (recommended)

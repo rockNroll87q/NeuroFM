@@ -1,7 +1,5 @@
 # Model outputs
 
----
-
 NeuroFM can produce two distinct sets of outputs: brain health features, and latent features. By default, `run_inference.py` only produces the brain health features. For more guidance on run options, see [usage](./usage.md).
 
 ### Brain health features

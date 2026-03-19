@@ -6,7 +6,6 @@ This is the official repository for the paper "NeuroFM: Toward Precision Neuroim
 
 📄 [Paper (bioRxiv)]() &nbsp;|&nbsp; 🖥️ [Website](https://rocknroll87q.github.io/NeuroFM/) &nbsp;|&nbsp; 📦 [Weights (v0.1.0)](https://huggingface.co/NeuroAI-UofG/NeuroFM) &nbsp;|&nbsp; 🐳 [Docker](https://hub.docker.com/r/rocknroll87q/neurofm) &nbsp;|&nbsp; 📓 [Notebooks](./notebooks/) 
 
----
 
 ## What it does
 
@@ -19,7 +18,6 @@ NeuroFM takes a T1w MRI scan and produces:
 
 NeuroFM comes in three sizes. The smallest variant is under 10MB and runs comfortably on CPU; the largest is ~150MB and is intended for GPU use or when maximum accuracy is needed.
 
----
 
 ## Quickstart
 
@@ -44,7 +42,6 @@ python scripts/run_inference.py --input /path/to/scan.nii.gz --output /path/to/o
 
 Weights for the default model variant (NeuroFM-S) are downloaded automatically (~10MB) on first run and cached to `~/.cache/NeuroFM/`. Larger variants are downloaded on demand when `--model` is specified.
 
----
 
 ## Installation
 
@@ -56,7 +53,6 @@ Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./require
 
 For more installation options (miniforge, docker, etc.), see the [installation guide](./docs/installation.md).
 
----
 
 ## Usage
 
@@ -80,7 +76,6 @@ results["latent"]        # np.ndarray, shape (D,)
 
 We recommend reading through the full [usage and options guide](./docs/usage.md).
 
----
 
 ## Notebooks
 
@@ -90,7 +85,6 @@ We recommend reading through the full [usage and options guide](./docs/usage.md)
 | [02_batch_inference.ipynb](./notebooks/02_batch_inference.ipynb) | Batch processing a study cohort via CSV |
 | [03_latent_features.ipynb](./notebooks/03_latent_features.ipynb) | Extracting and visualizing latent embeddings |
 
----
 
 ## Input requirements
 
@@ -104,7 +98,6 @@ We recommend reading through the full [usage and options guide](./docs/usage.md)
 
 > **Note on preprocessing:** The inference script performs resolution resampling and attempts LIA reorientation internally. Input data must be skull-stripped prior to inference. Preprocessing utilities will be added in a future release.
 
----
 
 ## Outputs
 
@@ -120,7 +113,6 @@ To see a more detailed explanation, see [models](./docs/models.md).
 
 For long-term reproducibility and citation in publications, please reference the bioarxiv rather than the HuggingFace mirror.
 
----
 
 ## Finetuning
 
@@ -128,19 +120,16 @@ For inference scenarios, the scripts load the NeuroFM saved `.h5` weights as the
 
 For now, finetuning is not officially supported by this repository but may be added at a later date.
 
----
 
 ## Troubleshooting
 
 For troubleshooting, see the [troubleshooting guide](docs/troubleshooting.md).
 
----
 
 ## Limitations and bias
 
 To understand limitations of our models, see [limitations](docs/limitations.md).
 
----
 
 ## Citation
 
@@ -156,7 +145,6 @@ If you use NeuroFM in your research, please cite:
 }
 ```
 
----
 
 ## License
 
@@ -177,13 +165,11 @@ For commercial licensing enquiries, please contact `michele.svanera@glasgow.ac.u
 
 For further detail, see [LICENSE](./LICENSE).
 
----
 
 ## Contributing
 
 This repository is in an early-release state accompanying the manuscript. Bug reports and questions are welcome via [GitHub Issues](https://github.com/rockNroll87q/NeuroFM/issues). Please open an issue before submitting a pull request.
 
----
 
 ## Acknowledgements
 

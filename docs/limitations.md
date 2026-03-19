@@ -1,7 +1,5 @@
 # Limitations and bias
 
----
-
 Some limitations of our work and models:
 
 - Training data is predominantly from **European cohorts** in the 40–90 year
