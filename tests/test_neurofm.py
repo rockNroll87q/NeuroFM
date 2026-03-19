@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 tests/test_neurofm.py
 
 Sanity checks for NeuroFM. Covers input resolution, preprocessing,
@@ -11,6 +16,8 @@ and verify output shapes and types are correct.
 
 Run with:
     python -m unittest tests/test_neurofm.py -v
+    
+=============================================================================
 """
 from __future__ import annotations
 

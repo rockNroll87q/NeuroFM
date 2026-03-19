@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 scripts/get_test_data.py
 
 Utility to fetch test data for debugging NeuroFM inference.
@@ -23,6 +28,8 @@ Examples
   python scripts/get_test_data.py --output ./test_data/
   python scripts/get_test_data.py --output ./test_data/ --mode synthetic
   python scripts/get_test_data.py --output ./test_data/ --mode template -n 3
+  
+=============================================================================
 """
 from __future__ import annotations
 

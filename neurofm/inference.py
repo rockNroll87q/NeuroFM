@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 neurofm/inference.py
 
 Core inference logic. The NeuroFM class is the primary user-facing API.
+=============================================================================
 """
 from __future__ import annotations
 

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 scripts/run_inference.py
 
 Command-line interface for NeuroFM inference.
@@ -30,6 +35,8 @@ Resume interrupted run (skip already-processed scans):
 
 Force reprocess everything:
     python scripts/run_inference.py --input /data/ --output ./results/ --overwrite
+    
+=============================================================================
 """
 from __future__ import annotations
 

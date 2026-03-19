@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 NeuroFM: Foundation model for individualized brain health estimation from T1w MRI.
 
 Basic usage:
@@ -7,6 +12,7 @@ Basic usage:
 
     model = NeuroFM(variant="neurofm-s", device="auto")
     results = model.predict("subject_01_T1w.nii.gz")
+=============================================================================
 """
 
 from .inference import NeuroFM

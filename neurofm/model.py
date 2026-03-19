@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 neurofm/model.py
 
 Model architecture definition and weight loading for inference.
@@ -8,6 +13,7 @@ Training-specific functionality (finetuning, layer freezing, competing
 architectures, resume training) has been intentionally stripped. This
 module contains only what is needed to construct the model and load
 pretrained weights.
+=============================================================================
 """
 from typing import Dict, List, Literal, Tuple
 

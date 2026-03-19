@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 neurofm/io.py
 
 Input resolution, preprocessing, and output writing.
@@ -21,6 +26,7 @@ Caching
 Per-file brain_health outputs double as a cache. If an output file already
 exists and --overwrite is not set, the file is loaded from disk and included
 in the final aggregate rather than re-running inference. Logged at DEBUG level.
+=============================================================================
 """
 from __future__ import annotations
 

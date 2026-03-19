@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
+=============================================================================
+Austin Dibble
+University of Glasgow
+2026
+
 neurofm/weights.py
 
 Variant registry and automatic weight download from HuggingFace.
 Zenodo is the canonical archive for citation; HuggingFace is used
 for programmatic access.
+=============================================================================
 """
 from __future__ import annotations
 
