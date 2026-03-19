@@ -97,7 +97,16 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.tag }}
           cache-to: type=gha,mode=max,scope=${{ matrix.tag }}
 
+      # Load and test runtime to make sure container is operational
+      # The notebook version gets tested differently since it is running jupyter
       - name: Smoke test ${{ matrix.tag }}
         if: github.event_name == 'pull_request'
         run: |
-          docker run --rm rocknroll87q/neurofm:${{ matrix.tag }} --help
+          if [ "${{ matrix.tag }}" = "notebook" ]; then
+            # Notebook container starts a Jupyter server, not a CLI —
+            # just verify the key packages import cleanly instead
+            docker run --rm --entrypoint python rocknroll87q/neurofm:${{ matrix.tag }} \
+              -c "import jupyter; import neurofm; print('OK')"
+          else
+            docker run --rm rocknroll87q/neurofm:${{ matrix.tag }} --help
+          fi
