@@ -2,7 +2,7 @@ FROM tensorflow/tensorflow:2.13.0-gpu
 
 # NOTE: This devcontainer is intended for Linux (x86_64) only.
 # tensorflow:2.13.0 uses AVX2/AVX-512 instructions that are not fully
-# emulated by Rosetta 2 on Apple Silicon — running this container on Mac
+# emulated by Rosetta 2 on Apple Silicon - running this container on Mac
 # will crash with "Illegal Instruction" at TF runtime.
 #
 # Mac development: use a local conda environment instead:

@@ -17,7 +17,7 @@ flat     All outputs written to a single flat directory. Default.
          This contains all individual-image outputs, separate from the 
          summary files in the output root.
 mirror   Output directory tree mirrors the input directory structure.
-summary  Summary CSV and aggregate latent .npy only — no per-file outputs.
+summary  Summary CSV and aggregate latent .npy only - no per-file outputs.
          Useful when disk space is a concern or only aggregate results needed.
          Individual-level directory by default follows 'flat'.
 
@@ -152,7 +152,7 @@ def load_and_preprocess(path: str, custom_preproc_fn = None) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        Preprocessed volume, shape (1, X, Y, Z, 1) — batch and channel dims
+        Preprocessed volume, shape (1, X, Y, Z, 1) - batch and channel dims
         included for direct model input.
     """
     img = nib.load(path)
@@ -190,7 +190,7 @@ def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
     except Exception as e:
         logger.warning(
             f"Reorientation from '{current_orientation}' to '{TARGET_ORIENTATION}' "
-            f"failed ({e}). Proceeding with original orientation — results may be degraded."
+            f"failed ({e}). Proceeding with original orientation - results may be degraded."
         )
 
     return img
@@ -227,7 +227,7 @@ def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
         )
     except Exception as e:
         logger.warning(
-            f"Resampling failed ({e}). Proceeding with original resolution — "
+            f"Resampling failed ({e}). Proceeding with original resolution - "
             f"results may be degraded."
         )
 
@@ -266,7 +266,7 @@ def get_output_dir(
     output_mode : str
         One of 'flat', 'mirror', 'summary'.
     input_root : str | None
-        For mirror mode — the common root of all input paths, used to
+        For mirror mode - the common root of all input paths, used to
         reconstruct relative directory structure. If None, uses the
         input file's parent directory.
 
@@ -339,14 +339,14 @@ def load_cached_result(
         if not bh_path.is_file():
             return None
         result["brain_health"] = np.load(bh_path)
-        logger.debug(f"Cache hit — loaded brain_health from {bh_path}")
+        logger.debug(f"Cache hit - loaded brain_health from {bh_path}")
 
     if "latent" in requested_outputs:
         lat_path = out_dir / f"{stem}_latent.npy"
         if not lat_path.is_file():
             return None
         result["latent"] = np.load(lat_path)
-        logger.debug(f"Cache hit — loaded latent from {lat_path}")
+        logger.debug(f"Cache hit - loaded latent from {lat_path}")
 
     return result if result else None
 
@@ -366,7 +366,7 @@ def save_outputs(
     """
     Save per-file model outputs to disk.
 
-    Skipped entirely in 'summary' mode — aggregate outputs are written
+    Skipped entirely in 'summary' mode - aggregate outputs are written
     by save_batch_summary() instead.
 
     Parameters
@@ -382,7 +382,7 @@ def save_outputs(
     output_mode : str
         One of 'flat', 'mirror', 'summary'.
     input_root : str | None
-        For mirror mode — common root of all input paths.
+        For mirror mode - common root of all input paths.
     """
     if output_mode == "summary":
         return
@@ -482,7 +482,7 @@ def _get_stem(path) -> str:
 
 def infer_input_root(input_paths: list) -> Path:
     """
-    For mirror mode — find the common directory prefix across all input paths.
+    For mirror mode - find the common directory prefix across all input paths.
     Returns None if inputs come from completely different trees.
     """
     if not input_paths:

@@ -65,7 +65,7 @@ from neurofm.weights import DEFAULT_VARIANT, list_variants
 def parse_args() -> argparse.Namespace:
     """Get our arg parser"""
     parser = argparse.ArgumentParser(
-        description="NeuroFM — Foundation model inference for T1w MRI.",
+        description="NeuroFM - Foundation model inference for T1w MRI.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -99,9 +99,9 @@ def parse_args() -> argparse.Namespace:
         choices=OUTPUT_MODES,
         help=(
             "How to organise output files (default: flat).\n"
-            "  flat    — all outputs in a single directory\n"
-            "  mirror  — mirrors the input directory structure\n"
-            "  summary — summary CSV and aggregate latent .npy only, no per-file outputs"
+            "  flat    - all outputs in a single directory\n"
+            "  mirror  - mirrors the input directory structure\n"
+            "  summary - summary CSV and aggregate latent .npy only, no per-file outputs"
         ),
     )
     parser.add_argument(
@@ -173,13 +173,13 @@ def main() -> None:
 
     logger.info(f"Found {len(input_paths)} scan(s) to process.")
 
-    # For mirror mode — find the common root of all inputs so relative
+    # For mirror mode - find the common root of all inputs so relative
     # paths can be reconstructed correctly
     input_root = infer_input_root(input_paths)
     input_root = Path(input_root)
 
     # ------------------------------------------------------------------
-    # Cache check — split inputs into cached vs needs inference
+    # Cache check - split inputs into cached vs needs inference
     # ------------------------------------------------------------------
     all_results: list[dict | None] = [None] * len(input_paths)
     to_run: list[tuple[int, str]] = []   # (original index, path)
@@ -226,7 +226,7 @@ def main() -> None:
         for (original_idx, _), result in zip(to_run, batch_results, strict=True):
             all_results[original_idx] = result
     else:
-        logger.info("All scans loaded from cache — skipping model load.")
+        logger.info("All scans loaded from cache - skipping model load.")
 
     # ------------------------------------------------------------------
     # Save per-file outputs

@@ -38,21 +38,21 @@ VARIANTS = {
         "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "484k",
         "latent_dim": 161,
-        "description": "Small — fast CPU inference, suitable for large cohorts.",
+        "description": "Small - fast CPU inference, suitable for large cohorts.",
     },
     "neurofm-m": {
         "filename": "neurofm-m.h5",
         "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "6.5M",
         "latent_dim": 256,
-        "description": "Medium — balanced accuracy and speed.",
+        "description": "Medium - balanced representation and speed.",
     },
     "neurofm-l": {
         "filename": "neurofm-l.h5",
         "savedmodel": "neurofm-l_savedmodel.tar.gz",
         "params": "10.8M",
         "latent_dim": 512,
-        "description": "Large — maximum accuracy, GPU recommended.",
+        "description": "Large - maximum representation, GPU recommended.",
     },
 }
 

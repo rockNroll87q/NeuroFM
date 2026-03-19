@@ -103,7 +103,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           if [ "${{ matrix.tag }}" = "notebook" ]; then
-            # Notebook container starts a Jupyter server, not a CLI —
+            # Notebook container starts a Jupyter server, not a CLI -
             # just verify the key packages import cleanly instead
             docker run --rm --entrypoint python rocknroll87q/neurofm:${{ matrix.tag }} \
               -c "import jupyter; import neurofm; print('OK')"

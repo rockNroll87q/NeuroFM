@@ -1,6 +1,6 @@
-# NeuroFM — CPU-only inference container
+# NeuroFM - CPU-only inference container
 #
-# Lighter weight than the GPU image — no CUDA/cuDNN dependencies.
+# Lighter weight than the GPU image - no CUDA/cuDNN dependencies.
 # Recommended for laptops, workstations without an NVIDIA GPU, and
 # HPC nodes where Singularity is unavailable or GPU allocation is limited.
 #
@@ -30,7 +30,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Suppress TF startup noise; set to 0 for full verbosity when debugging
 ENV TF_CPP_MIN_LOG_LEVEL=2
 
-# Force CPU — avoids TF warnings about missing GPU drivers
+# Force CPU - avoids TF warnings about missing GPU drivers
 ENV CUDA_VISIBLE_DEVICES=""
 
 # System dependencies

@@ -10,7 +10,7 @@ neurofm/layers.py
 Custom Keras layers used in the NeuroFM architecture.
 
 SSFAdaLayer and deconstructed layer variants (fn_BottleNeck, fn_PooledBottleNeck)
-have been intentionally omitted — they are training/finetuning-only constructs
+have been intentionally omitted - they are training/finetuning-only constructs
 not required for inference.
 =============================================================================
 """

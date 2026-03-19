@@ -34,7 +34,7 @@ from .layers import BottleNeck, Plain, Residual, add_conv_layer
 from .losses import losses_dict, metrics_dict
 
 # Internal order matches the trained model output heads exactly.
-# Do not reorder — this must match predicted_variable in VARIANT_CONFIGS.
+# Do not reorder - this must match predicted_variable in VARIANT_CONFIGS.
 _BRAIN_HEALTH_INTERNAL = ["PatientAge", "PatientSex", "ventricular_volume", "brain_volume"]
  
 # # User-facing column names in all output CSVs and .npy files.
@@ -48,7 +48,7 @@ class NetworkConfig(BaseModel):
     """
     Configuration for a NeuroFM model variant.
     All hyperparameters required to reconstruct the architecture exactly
-    as trained — do not change these for a given set of pretrained weights.
+    as trained - do not change these for a given set of pretrained weights.
 
     Defaults match the training NetConfig from config.py exactly.
     """
@@ -134,7 +134,7 @@ VARIANT_CONFIGS: Dict[str, NetworkConfig] = {
 }
 
 # ---------------------------------------------------------------------------
-# Custom objects — required for loading saved .h5 models
+# Custom objects - required for loading saved .h5 models
 # ---------------------------------------------------------------------------
 
 def get_custom_objects() -> dict:
@@ -189,7 +189,7 @@ def load_neurofm(weights_path: str, variant: str) -> Model:
     logger.info(f"Loading weights from {weights_path}...")
     model.load_weights(weights_path, by_name=True)
 
-    logger.info(f"Model ready — {_count_params(model):,} parameters.")
+    logger.info(f"Model ready - {_count_params(model):,} parameters.")
     return model
 
 
@@ -212,7 +212,7 @@ def build_model(config: NetworkConfig) -> Model:
     ----------
     config : NetworkConfig
         Architecture hyperparameters. Use one of the VARIANT_CONFIGS dicts
-        for a released variant — do not change parameters for pretrained weights.
+        for a released variant - do not change parameters for pretrained weights.
 
     Returns
     -------
@@ -337,7 +337,7 @@ def _build_output_layers(config: NetworkConfig, x):
         model state
     """
     output_layers = []
-    # Latent feature extraction point — named layer referenced in inference.py
+    # Latent feature extraction point - named layer referenced in inference.py
     x_multihead = tf.keras.layers.Layer(name="multihead_output")(x)
 
     with tf.name_scope("Output"):
@@ -359,7 +359,7 @@ def _build_output_layers(config: NetworkConfig, x):
 
             last_activation = "linear" if n_classes == 1 else "softmax"
             x = Dense(n_classes)(x)
-            # Force float32 output — avoids errors with mixed precision training
+            # Force float32 output - avoids errors with mixed precision training
             x = Activation(last_activation, dtype="float32", name=var_name)(x)
             output_layers.append(x)
 

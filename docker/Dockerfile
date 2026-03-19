@@ -1,4 +1,4 @@
-# NeuroFM — User-facing inference container
+# NeuroFM - User-facing inference container
 #
 # Usage:
 #   docker pull rocknroll87q/neurofm:latest

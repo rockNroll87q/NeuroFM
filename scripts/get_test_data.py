@@ -79,7 +79,7 @@ def parse_args():
 
 
 # ---------------------------------------------------------------------------
-# Template mode — MNI152 via TemplateFlow
+# Template mode - MNI152 via TemplateFlow
 # ---------------------------------------------------------------------------
 
 def fetch_template(output_dir: str, n: int) -> List[str]:
@@ -87,7 +87,7 @@ def fetch_template(output_dir: str, n: int) -> List[str]:
     Download the MNI152NLin2009cAsym 1mm skull-stripped T1w template.
 
     This is the standard MNI space: skull-stripped, 1mm isotropic, and the
-    space NeuroFM expects. A good sanity check — brain age output should be
+    space NeuroFM expects. A good sanity check - brain age output should be
     in the plausible adult range, brain volume ~1.2-1.4L.
 
     Args:
@@ -131,7 +131,7 @@ def fetch_template(output_dir: str, n: int) -> List[str]:
 
 
 # ---------------------------------------------------------------------------
-# Synthetic mode — noise volume in MNI space
+# Synthetic mode - noise volume in MNI space
 # ---------------------------------------------------------------------------
 
 def generate_synthetic(output_dir: str, n: int) -> List[str]:
@@ -199,7 +199,7 @@ def _make_synthetic_volume(shape: tuple) -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------
-# CSV helper — optional, generates a subjects.csv for batch testing
+# CSV helper - optional, generates a subjects.csv for batch testing
 # ---------------------------------------------------------------------------
 
 def write_test_csv(paths: List[str], output_dir: str) -> str:

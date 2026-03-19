@@ -10,7 +10,7 @@ tests/test_neurofm.py
 Sanity checks for NeuroFM. Covers input resolution, preprocessing,
 model construction, and inference output shapes.
 
-These tests are intentionally lightweight — no pretrained weights are
+These tests are intentionally lightweight - no pretrained weights are
 required. The inference tests build each variant with random weights
 and verify output shapes and types are correct.
 
@@ -164,7 +164,7 @@ class TestPreprocessing(unittest.TestCase):
         self.assertAlmostEqual(float(np.std(result)), 1.0, places=4)
 
     def test_normalize_constant_volume(self):
-        """Constant volume has zero std — scipy returns nan, which is expected."""
+        """Constant volume has zero std - scipy returns nan, which is expected."""
         data = np.ones((8, 8, 8), dtype=np.float32)
         result = _normalize(data)
         self.assertTrue(np.all(np.isnan(result)))
@@ -268,13 +268,13 @@ class TestModelConstruction(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Inference output shapes (random weights — no download required)
+# Inference output shapes (random weights - no download required)
 # ---------------------------------------------------------------------------
 
 class TestInferenceShapes(unittest.TestCase):
     """
     Smoke tests using randomly initialised weights. Validates output
-    shapes and types only — not prediction quality.
+    shapes and types only - not prediction quality.
     """
 
     @classmethod
@@ -394,7 +394,7 @@ class TestOutputWritingAndCache(unittest.TestCase):
         self.assertIsNone(cached)
 
     def test_cache_miss_if_latent_missing(self):
-        """brain_health saved but latent not — partial cache should be a miss."""
+        """brain_health saved but latent not - partial cache should be a miss."""
         save_outputs(
             self.fake_result, self.input_path, self.tmp,
             ["brain_health"], output_mode="flat",

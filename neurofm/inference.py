@@ -86,7 +86,7 @@ class NeuroFM:
         self._latent_model = None  # built lazily if latent output is requested
 
         logger.info(
-            f"NeuroFM ready — variant: {variant}, device: {_active_device()}"
+            f"NeuroFM ready - variant: {variant}, device: {_active_device()}"
         )
 
     def predict(
@@ -109,8 +109,8 @@ class NeuroFM:
         -------
         dict
             Keys are the requested output names. Values are np.ndarrays.
-            'brain_health' shape: (4,) — [brain_age, sex, ventricle_volume, brain_volume]
-            'latent' shape: (D,) — latent embedding dimension for the variant
+            'brain_health' shape: (4,) - [brain_age, sex, ventricle_volume, brain_volume]
+            'latent' shape: (D,) - latent embedding dimension for the variant
         """
         if outputs is None:
             outputs = ["brain_health"]
@@ -200,7 +200,7 @@ class NeuroFM:
             Order is: age, sex, ventricle volume, brain volume.
         """
         preds = self._model(volume, training=False)
-        # preds shape: (1, 4) — squeeze batch dim
+        # preds shape: (1, 4) - squeeze batch dim
 
         # initialize before populating
         preds_processed = [0] * len(_BRAIN_HEALTH_INTERNAL)

@@ -12,7 +12,7 @@ dependencies:
 
   # Install everything via pip to guarantee TF 2.13 compatibility.
   # The conda tensorflow package lags behind and may pull in conflicting
-  # CUDA libraries — pip is the safer path for this TF version.
+  # CUDA libraries - pip is the safer path for this TF version.
   - pip:
     - tensorflow==2.13.0
     - numpy>=1.23.5,<2.0.0
