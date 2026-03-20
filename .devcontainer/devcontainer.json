@@ -1,0 +1,59 @@
+{
+    "name": "NeuroFM",
+    "build": {
+        "dockerfile": "Dockerfile.cpu", // remove .cpu when using the gpu container
+        "context": ".."
+    },
+
+    // GPU passthrough disabled for CPU development (Mac).
+    // When switching to Linux with GPU, restore:
+    //   "hostRequirements": { "gpu": "optional" },
+    //   "runArgs": ["--gpus", "all"],
+    "runArgs": [],
+
+    // Mount the repo into the container
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace",
+
+    // Environment variables
+    "containerEnv": {
+        // Suppress TF info/warning logs in the terminal by default.
+        // Set to 0 for full TF verbosity if debugging GPU issues.
+        "TF_CPP_MIN_LOG_LEVEL": "2"
+    },
+
+    // Re-install the package in editable mode after the container is created
+    // so local edits to neurofm/ are immediately reflected without reinstalling
+    "postCreateCommand": "pip install -e .",
+
+    // VS Code extensions
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // Python
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+
+                // Notebooks
+                "ms-toolsai.jupyter",
+                "ms-toolsai.jupyter-renderers",
+
+                // Nicer development experience
+                "eamodio.gitlens",
+                "gruntfuggly.todo-tree",
+                "streetsidesoftware.code-spell-checker"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "editor.formatOnSave": true,
+                "python.formatting.provider": "ruff",
+                "[python]": {
+                    "editor.defaultFormatter": "ms-python.python"
+                },
+                "editor.rulers": [88],
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+FROM tensorflow/tensorflow:2.13.0
+
+# NOTE: This devcontainer is intended for Linux (x86_64) only.
+# tensorflow:2.13.0 uses AVX2/AVX-512 instructions that are not fully
+# emulated by Rosetta 2 on Apple Silicon - running this container on Mac
+# will crash with "Illegal Instruction" at TF runtime.
+#
+# Mac development: use a local conda environment instead:
+#   conda create -n neurofm python=3.10
+#   conda activate neurofm
+#   pip install tensorflow-macos==2.13.0 tensorflow-metal
+#   pip install -e ".[dev]"
+
+# Avoid interactive prompts during apt installs
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Force CPU - no GPU on Mac, avoids TF warnings
+ENV CUDA_VISIBLE_DEVICES=""
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    wget \
+    vim \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Install Python dependencies
+# Copy requirements first to leverage Docker layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install the package in editable mode
+# This will be re-run as a postCreateCommand once the full repo is mounted,
+# but doing it here caches the dependency install layer
+COPY . .
+RUN pip install --no-cache-dir -e .

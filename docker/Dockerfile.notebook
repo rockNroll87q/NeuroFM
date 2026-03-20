@@ -1,0 +1,27 @@
+FROM tensorflow/tensorflow:2.13.0-gpu
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+RUN apt-get update && apt-get install -y git \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/neurofm
+
+COPY requirements.txt .
+
+# Install Jupyter/ipykernel first, before the typing-extensions pin is applied
+RUN pip install --no-cache-dir jupyter ipykernel
+
+# Install core dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+RUN pip install --no-cache-dir ".[notebooks]"
+
+# Pin typing-extensions last so nothing upgrades it
+RUN pip install --no-cache-dir "typing-extensions<4.6.0"
+
+EXPOSE 8888
+
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--no-browser", "--allow-root"]

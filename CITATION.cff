@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+license: # TODO: e.g. MIT, Apache-2.0, CC-BY-4.0
+
+repository-code: "https://github.com/rockNroll87q/NeuroFM"
+
+version: "0.1.0"
+date-released: # TODO: "YYYY-MM-DD"
+
+authors:
+  - family-names: # TODO
+    given-names: # TODO
+    orcid: # TODO: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: # TODO
+  - family-names: # TODO
+    given-names: # TODO
+    orcid: # TODO
+    affiliation: # TODO
+  # Add further authors as needed
+
+abstract: >
+  NeuroFM is a lightweight foundation model for individualized brain health
+  estimation from T1-weighted MRI. Despite containing fewer than 11 million
+  parameters, NeuroFM achieves state-of-the-art performance on brain age
+  prediction, brain volume estimation, lateral ventricle volume estimation,
+  and sex classification from a single scan.
+
+keywords:
+  - neuroimaging
+  - foundation model
+  - brain age
+  - MRI
+  - deep learning
+  - TensorFlow
+
+preferred-citation:
+  type: article
+  title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
+  authors:
+    - family-names: # TODO
+      given-names: # TODO
+      orcid: # TODO
+      affiliation: # TODO
+    - family-names: # TODO
+      given-names: # TODO
+      orcid: # TODO
+      affiliation: # TODO
+  journal: "bioRxiv"
+  year: 2026
+  doi: # TODO: "10.1101/XXXXXX"
+  url: # TODO: "https://doi.org/10.1101/XXXXXX"
+
+identifiers:
+  - type: doi
+    value: # TODO: "10.1101/XXXXXX"  (bioRxiv preprint DOI)
+    description: "bioRxiv preprint"

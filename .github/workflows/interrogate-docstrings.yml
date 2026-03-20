@@ -1,0 +1,26 @@
+
+name: Interrogate documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Python Interrogate Check
+      run: |
+        pip install interrogate
+        interrogate --version
+        interrogate -v -I -n --style google --fail-under 70 -e docs/ -e deployment/ -e notebooks/ -e tests/ ./
