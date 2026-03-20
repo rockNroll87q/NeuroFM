@@ -16,31 +16,9 @@ NeuroFM takes a T1w MRI scan and produces:
 | `brain_health` | Predicted brain health features: brain age, brain volume (GM+WM), lateral ventricle volume, sex | floats, `.npy` or `.csv` |
 | `latent` *(optional)* | Latent embedding (dimension depends on model variant) | `.npy` array |
 
+To understand the differences in outputs and how they might be used, see [outputs](./docs/outputs.md).
+
 NeuroFM comes in three sizes. The smallest variant is under 10MB and runs comfortably on CPU; the largest is ~150MB and is intended for GPU use or when maximum accuracy is needed.
-
-
-## Quickstart
-
-Get a result in under 5 minutes on CPU, no GPU required.
-
-**1. Install**
-```bash
-pip install git+https://github.com/rockNroll87q/NeuroFM.git
-```
-
-Or clone and install locally:
-```bash
-git clone https://github.com/rockNroll87q/NeuroFM.git
-cd NeuroFM
-pip install -e .
-```
-
-**2. Run on a single file**
-```bash
-python scripts/run_inference.py --input /path/to/scan.nii.gz --output /path/to/output/
-```
-
-Weights for the default model variant (NeuroFM-S) are downloaded automatically (~10MB) on first run and cached to `~/.cache/NeuroFM/`. Larger variants are downloaded on demand when `--model` is specified.
 
 
 ## Installation
@@ -48,9 +26,8 @@ Weights for the default model variant (NeuroFM-S) are downloaded automatically (
 ```bash
 pip install git+https://github.com/rockNroll87q/NeuroFM.git
 ```
+
 Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./requirements.txt) for full dependencies.
-
-
 For more installation options (miniforge, docker, etc.), see the [installation guide](./docs/installation.md).
 
 
@@ -76,6 +53,7 @@ results["latent"]        # np.ndarray, shape (D,)
 
 We recommend reading through the full [usage and options guide](./docs/usage.md).
 
+Weights for the default model variant (NeuroFM-S) are downloaded automatically (~10MB) on first run and cached to `~/.cache/NeuroFM/`. Larger variants are downloaded on demand when `--model` is specified.
 
 ## Notebooks
 
@@ -98,10 +76,6 @@ We recommend reading through the full [usage and options guide](./docs/usage.md)
 
 > **Note on preprocessing:** The inference script performs resolution resampling and attempts LIA reorientation internally. Input data must be skull-stripped prior to inference. Preprocessing utilities will be added in a future release.
 
-
-## Outputs
-
-NeuroFM can produce two distinct sets of outputs: brain health features, and latent features. To understand the differences and how they might be used, see [outputs](./docs/outputs.md).
 
 ---
 
@@ -149,19 +123,6 @@ If you use NeuroFM in your research, please cite:
 ## License
 
 NeuroFM code and model weights are released under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-
-**You are free to**:
-
-- Use, share, and adapt NeuroFM for non-commercial research and academic purposes
-- Extract and use latent representations for downstream research tasks
-
-**Under the following terms**:
-
-- Attribution - cite the accompanying paper and link to this repository
-- NonCommercial - do not use NeuroFM or its outputs for commercial purposes
-- ShareAlike - if you adapt or build upon NeuroFM, distribute your contributions under the same license
-
-For commercial licensing enquiries, please contact `michele.svanera@glasgow.ac.uk`.
 
 For further detail, see [LICENSE](./LICENSE).
 
