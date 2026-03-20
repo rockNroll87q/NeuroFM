@@ -27,8 +27,7 @@ NeuroFM comes in three sizes. The smallest variant is under 10MB and runs comfor
 pip install git+https://github.com/rockNroll87q/NeuroFM.git
 ```
 
-Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./requirements.txt) for full dependencies.
-For more installation options (miniforge, docker, etc.), see the [installation guide](./docs/installation.md).
+> **Requires Python 3.9–3.10 and TensorFlow 2.13**. For more installation options if the above doesn't work for you (miniforge, docker, etc.), see the [installation guide](./docs/installation.md). See [requirements.txt](./requirements.txt) for full dependencies.
 
 
 ## Usage
