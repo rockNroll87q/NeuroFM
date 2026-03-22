@@ -1,6 +1,6 @@
-# NeuroFM
+# NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation
 
-This is the official repository for the paper "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation".
+![Main figure](<./media/Fig1 - v0.11.png>)
 
 > **NeuroFM is a foundation model trained exclusively on healthy brains that organizes structural MRI into population-level representations of brain health, transferring across five neuroscience domains and supporting individual-level profiling without ever seeing a diagnostic label.**
 
@@ -27,8 +27,7 @@ NeuroFM comes in three sizes. The smallest variant is under 10MB and runs comfor
 pip install git+https://github.com/rockNroll87q/NeuroFM.git
 ```
 
-Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](./requirements.txt) for full dependencies.
-For more installation options (miniforge, docker, etc.), see the [installation guide](./docs/installation.md).
+> **Requires Python 3.9–3.10 and TensorFlow 2.13**. For more installation options if the above doesn't work for you (miniforge, docker, etc.), see the [installation guide](./docs/installation.md). See [requirements.txt](./requirements.txt) for full dependencies.
 
 
 ## Usage

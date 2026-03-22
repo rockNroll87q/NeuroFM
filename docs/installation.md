@@ -6,7 +6,15 @@ NeuroFM can be installed or used via the following options. We recommend install
 ```bash
 pip install git+https://github.com/rockNroll87q/NeuroFM.git
 ```
-Requires Python 3.9–3.10 and TensorFlow 2.13. See [requirements.txt](../requirements.txt) for full dependencies.
+
+Alternatively: 
+```bash
+git clone https://github.com/rockNroll87q/NeuroFM.git
+cd NeuroFM
+pip install .
+```
+
+> NeuroFM requires Python 3.9–3.11 and TensorFlow 2.13. **Python 3.12+ is not supported**. If you are on 3.12 or newer, please create a dedicated environment with Python 3.11 using Miniforge (see [Option 2](#option-2-miniforge)) or use [Docker](#option-3-docker-zero-friction-recommended-if-you-hit-dependency-issues). See [requirements.txt](../requirements.txt) for full dependencies.
 
 ### Option 2: Miniforge
 ```bash
