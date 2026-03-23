@@ -54,6 +54,9 @@ notebooks = [
     "ipykernel<6.21.1",
     "matplotlib>=3.7.0",
     "nilearn>=0.10.0",
+    "templateflow<=24.1.0",
+    "numpy>=1.23.5,<2.0.0",
+    "typing-extensions<4.6.0"
 ]
 # Training and augmentation (not required for inference)
 training = [
