@@ -24,11 +24,21 @@ pip install git+https://github.com/rockNroll87q/NeuroFM.git"
 ```
 
 ### Option 3: Docker *(zero-friction, recommended if you hit dependency issues)*
+
+#### Inference docker
 ```bash
 docker pull rocknroll87q/neurofm:latest
 docker run --rm -v /path/to/data:/data rocknroll87q/neurofm \
     --input /data/scan.nii.gz --output /data/output/
 ```
+
+#### Notebook docker
+```bash
+docker pull rocknroll87q/neurofm:notebook
+docker run --rm -v /path/to/data:/data -p 8888:8888 rocknroll87q/neurofm
+```
+
+Open browser to `http://localhost:8888`.
 
 ### Option 4: Singularity *(for HPC/cluster environments)*
 ```bash
