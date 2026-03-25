@@ -1,6 +1,6 @@
 # NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation
 
-![Main figure](<./media/Fig1 - v0.11.png>)
+![Main figure](<./media/Fig1 - v0.11_web.png>)
 
 > **NeuroFM is a foundation model trained exclusively on healthy brains that organizes structural MRI into population-level representations of brain health, transferring across five neuroscience domains and supporting individual-level profiling without ever seeing a diagnostic label.**
 
