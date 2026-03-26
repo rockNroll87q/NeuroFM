@@ -432,7 +432,7 @@ def save_batch_summary(
     latent_rows = []
     latent_input_paths = []
 
-    for path, result in zip(input_paths, all_results, strict=True):
+    for path, result in zip(input_paths, all_results):
         if result is None:
             continue
 
@@ -442,7 +442,7 @@ def save_batch_summary(
 
         if "brain_health" in requested_outputs and "brain_health" in result:
             row = {input_col: path}
-            row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist(), strict=True)))
+            row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist())))
             bh_rows.append(row)
 
         if "latent" in requested_outputs and "latent" in result:
