@@ -221,7 +221,7 @@ class NeuroFM:
         sex_pred = np.argmax(preds[sex_idx])
 
         preds_processed[sex_idx] = sex_pred
-        return np.squeeze(preds_processed).astype(np.float32)
+        return np.squeeze(np.array(preds_processed, dtype=np.float32))
 
     def predict_latent(self, volume: np.ndarray) -> np.ndarray:
         """

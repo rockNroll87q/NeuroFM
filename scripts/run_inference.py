@@ -208,6 +208,9 @@ def main() -> None:
     # ------------------------------------------------------------------
     # Load model (only if there's actually inference to run)
     # ------------------------------------------------------------------
+    successful = 0
+    failed = 0
+    
     if to_run:
         try:
             model = NeuroFM(
@@ -221,32 +224,37 @@ def main() -> None:
             sys.exit(1)
 
         paths_to_run = [path for _, path in to_run]
-        batch_results = model.predict_batch(paths_to_run, outputs=requested_outputs)
+        batch_results = []
+        n = len(paths_to_run)
 
-        for (original_idx, _), result in zip(to_run, batch_results, strict=True):
+        for i, path in enumerate(paths_to_run):
+            logger.info(f"[{i + 1}/{n}] Processing: {path}")
+            try:
+                result = model.predict(path, outputs=requested_outputs)
+            except Exception as e:
+                logger.warning(f"Failed to process {path}: {e}")
+                result = None
+                
+            batch_results.append(result)
+    
+            # save per-file outputs as we run, rather than after all are finished
+            if result is None:
+                failed += 1
+                continue
+            try:
+                save_outputs(
+                    result, path, output_root,
+                    requested_outputs, args.output_mode, input_root,
+                )
+                successful += 1
+            except Exception as e:
+                logger.warning(f"Failed to save outputs for {path}: {e}")
+                failed += 1    
+
+        for (original_idx, _), result in zip(to_run, batch_results):
             all_results[original_idx] = result
     else:
         logger.info("All scans loaded from cache - skipping model load.")
-
-    # ------------------------------------------------------------------
-    # Save per-file outputs
-    # ------------------------------------------------------------------
-    successful = 0
-    failed = 0
-
-    for path, result in zip(input_paths, all_results, strict=True):
-        if result is None:
-            failed += 1
-            continue
-        try:
-            save_outputs(
-                result, path, output_root,
-                requested_outputs, args.output_mode, input_root,
-            )
-            successful += 1
-        except Exception as e:
-            logger.warning(f"Failed to save outputs for {path}: {e}")
-            failed += 1
 
     # ------------------------------------------------------------------
     # Write aggregate summary
@@ -254,7 +262,7 @@ def main() -> None:
     save_batch_summary(
         all_results, input_paths, output_root, requested_outputs,
     )
-
+    
     # ------------------------------------------------------------------
     # Final report
     # ------------------------------------------------------------------

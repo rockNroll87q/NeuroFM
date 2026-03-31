@@ -31,6 +31,7 @@ in the final aggregate rather than re-running inference. Logged at DEBUG level.
 from __future__ import annotations
 
 import os
+import warnings
 from glob import glob
 from pathlib import Path
 from typing import List, Optional
@@ -39,9 +40,10 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 from loguru import logger
-from nibabel.processing import conform
+from nibabel.processing import conform as nibabel_conform
 from scipy import stats
 
+from .custom_conform import pad_orient_conform
 from .model import _BRAIN_HEALTH_INTERNAL, BRAIN_HEALTH_KEYS  # noqa: F401
 
 SUPPORTED_EXTENSIONS = (".nii", ".nii.gz")
@@ -156,17 +158,21 @@ def load_and_preprocess(path: str, custom_preproc_fn = None) -> np.ndarray:
         included for direct model input.
     """
     img = nib.load(path)
-    img = _reorient(img)
-    img = _resample(img)
+    return preprocess_nifti(img, custom_preproc_fn = custom_preproc_fn)
+
+def preprocess_nifti(img, custom_preproc_fn=None):
+    img = _resample(img)   # reorients internally if resampling occurs
+    img = _reorient(img)   # no-op if already correct; fallback if resample short-circuited
     data = img.get_fdata(dtype=np.float32)
     if custom_preproc_fn is not None:
         data = custom_preproc_fn(data)
     data = _normalize(data)
-    return data[np.newaxis, ..., np.newaxis]  # (1, X, Y, Z, 1)
+    return data[np.newaxis, ..., np.newaxis]
 
 
 def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
     """Reorient the given nifti image into the correct orientation space, as needed.
+    Image should already be in 256^3 1mm iso space by this point.
 
     Args:
         img (nib.Nifti1Image): Input volume
@@ -174,36 +180,52 @@ def _reorient(img: nib.Nifti1Image) -> nib.Nifti1Image:
     Returns:
         nib.Nifti1Image: Reoriented volume.
     """
-    current_codes = nib.aff2axcodes(img.affine)
-    current_orientation = "".join(current_codes)
-
+    current_orientation = "".join(nib.aff2axcodes(img.affine))
     if current_orientation == TARGET_ORIENTATION:
         return img
 
     logger.debug(f"Reorienting from '{current_orientation}' to '{TARGET_ORIENTATION}'.")
-
     try:
-        current_ornt = nib.orientations.axcodes2ornt(current_codes)
-        target_ornt = nib.orientations.axcodes2ornt(tuple(TARGET_ORIENTATION))
-        transform = nib.orientations.ornt_transform(current_ornt, target_ornt)
-        img = img.as_reoriented(transform)
+        reoriented, _, _, _ = pad_orient_conform(
+            img,
+            out_shape=img.shape[:3],
+            orientation=TARGET_ORIENTATION,
+            pad=False,
+        )
+        return reoriented
     except Exception as e:
         logger.warning(
             f"Reorientation from '{current_orientation}' to '{TARGET_ORIENTATION}' "
             f"failed ({e}). Proceeding with original orientation - results may be degraded."
         )
-
-    return img
-
+        return img
 
 def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
-    """Resample given nifti volume into the correct iso resolution.
+    """Conform image to TARGET_SHAPE and TARGET_ZOOMS.
 
-    Args:
-        img (nib.Nifti1Image): Input nifti image
+    Three cases are handled in order of cost:
 
-    Returns:
-        nib.Nifti1Image: Resampled nifti image
+    1. Correct shape and zooms - no-op, return immediately.
+    2. Correct zooms, wrong shape - pad and reorient only (fast path, matches
+       training which assumed pre-conformant inputs from FreeSurfer).
+    3. Wrong zooms - full cubic resample via nibabel_conform (slow path). Emits
+       a one-time UserWarning recommending upstream pre-processing with
+       `mri_convert --conform --resample_type cubic` for batch use.
+
+    Reorientation to TARGET_ORIENTATION is handled as part of both the fast
+    and slow paths here. _reorient is still called after this function in
+    preprocess_nifti as a fallback for any residual orientation mismatch.
+
+    Parameters
+    ----------
+    img : nib.Nifti1Image
+        Input volume in any shape, resolution, or orientation.
+
+    Returns
+    -------
+    nib.Nifti1Image
+        Volume conformed to TARGET_SHAPE and TARGET_ZOOMS where possible.
+        On failure, returns the original image and logs a warning.
     """
     current_zooms = tuple(float(z) for z in img.header.get_zooms()[:3])
     current_shape = img.shape[:3]
@@ -212,26 +234,49 @@ def _resample(img: nib.Nifti1Image) -> nib.Nifti1Image:
         return img
 
     logger.debug(
-        f"Resampling: shape {current_shape} -> {TARGET_SHAPE}, "
+        f"Conforming: shape {current_shape} -> {TARGET_SHAPE}, "
         f"zooms {current_zooms} -> {TARGET_ZOOMS}."
     )
 
-    try:
-        img = conform(
-            img,
-            out_shape=TARGET_SHAPE,
-            voxel_size=TARGET_ZOOMS,
-            order=1,
-            cval=0.0,
-            orientation=TARGET_ORIENTATION,
+    if current_zooms != TARGET_ZOOMS:
+        # Full resample required - slow path
+        warnings.warn(
+            "Input volume requires resampling due to incorrect voxel size. "
+            "This is slower and may reduce accuracy. For batch analyses, consider "
+            "pre-processing with: mri_convert --conform --resample_type cubic <input> <output>",
+            UserWarning,
+            stacklevel=2,
         )
-    except Exception as e:
-        logger.warning(
-            f"Resampling failed ({e}). Proceeding with original resolution - "
-            f"results may be degraded."
-        )
-
-    return img
+        try:
+            return nibabel_conform(
+                img,
+                out_shape=TARGET_SHAPE,
+                voxel_size=TARGET_ZOOMS,
+                order=3,
+                orientation=TARGET_ORIENTATION,
+            )
+        except Exception as e:
+            logger.warning(
+                f"Resampling failed ({e}). Proceeding with original resolution - "
+                f"results may be degraded."
+            )
+            return img
+    else:
+        # Zooms are correct, only padding/reorientation needed - fast path
+        try:
+            reoriented, _, _, _ = pad_orient_conform(
+                img,
+                out_shape=TARGET_SHAPE,
+                orientation=TARGET_ORIENTATION,
+                pad=True,
+            )
+            return reoriented
+        except Exception as e:
+            logger.warning(
+                f"Padding/reorientation failed ({e}). Proceeding with original shape - "
+                f"results may be degraded."
+            )
+            return img
 
 
 def _normalize(data: np.ndarray) -> np.ndarray:
@@ -432,7 +477,7 @@ def save_batch_summary(
     latent_rows = []
     latent_input_paths = []
 
-    for path, result in zip(input_paths, all_results, strict=True):
+    for path, result in zip(input_paths, all_results):
         if result is None:
             continue
 
@@ -442,7 +487,7 @@ def save_batch_summary(
 
         if "brain_health" in requested_outputs and "brain_health" in result:
             row = {input_col: path}
-            row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist(), strict=True)))
+            row.update(dict(zip(BRAIN_HEALTH_KEYS, result["brain_health"].tolist())))
             bh_rows.append(row)
 
         if "latent" in requested_outputs and "latent" in result:
