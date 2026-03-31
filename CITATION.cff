@@ -2,7 +2,7 @@ cff-version: 1.2.0
 title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
 message: "If you use this software, please cite it using the metadata below."
 type: software
-license: CC-BY-NC-ND 4.0 International License
+license: "CC-BY-NC-ND-4.0"
 
 repository-code: "https://github.com/rockNroll87q/NeuroFM"
 
