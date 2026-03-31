@@ -1,46 +1,55 @@
 cff-version: 1.2.0
 title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
-message: "If you use this software, please cite the associated paper."
+message: "If you use this software, please cite it using the metadata below."
 type: software
-
-authors:
-  - family-names: "Dibble"
-    given-names: "Austin"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Dalby"
-    given-names: "Connor"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Sevegnani"
-    given-names: "Michele"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Fracasso"
-    given-names: "Alessio"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Lyall"
-    given-names: "Donald M"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Harvey"
-    given-names: "Monika"
-    affiliation: "University of Glasgow"
-
-  - family-names: "Svanera"
-    given-names: "Michele"
-    affiliation: "University of Glasgow"
+license: "CC-BY-NC-ND-4.0"
 
 repository-code: "https://github.com/rockNroll87q/NeuroFM"
 
-version: "v1.0.0"
+version: "0.1.0"
 date-released: 2026-03-31
 
-license: "CC-BY-NC-SA-4.0"
+authors:
+  - family-names: Dibble
+    given-names: Austin
+    orcid: http://orcid.org/0009-0008-3963-041X
+    affiliation: University of Glasgow
+  - family-names: Dalby
+    given-names: Connor
+    orcid: http://orcid.org/0009-0005-5705-061X
+    affiliation: University of Glasgow
+  - family-names: Sevegnani
+    given-names: Michele
+    orcid: http://orcid.org/0000-0001-6773-9481
+    affiliation: University of Glasgow
+  - family-names: Fracasso
+    given-names: Alessio
+    orcid: http://orcid.org/0000-0002-4542-112X
+    affiliation: University of Glasgow
+  - family-names: Lyall
+    given-names: Donald M
+    orcid: http://orcid.org/0000-0003-3850-1487
+    affiliation: University of Glasgow
+  - family-names: Harvey
+    given-names: Monika
+    orcid: http://orcid.org/0000-0003-1694-1174
+    affiliation: University of Glasgow
+  - family-names: Svanera
+    given-names: Michele
+    orcid: http://orcid.org/0000-0002-7828-9209
+    affiliation: University of Glasgow
 
 abstract: >
-  Precision neuroimaging aims to deliver individualized assessments of brain health, yet a single structural MRI does not yield a multidimensional, quantitative summary of an individual’s current health or future risk. Existing approaches optimize task-specific objectives, yielding representations entangled with cohort- or disease-specific signals rather than capturing biologically grounded patterns of brain health. Here, we introduce NeuroFM, a foundation model trained exclusively on 100,000 healthy synthetic volumes to predict morphometric and demographic targets. Without exposure to diagnostic labels, NeuroFM organizes brain MRIs into population-level patterns that encode meaningful brain health differences. These representations transfer across five neuroscience domains without adaptation and support simple linear readouts for clinical, cognitive, developmental, socio-behavioural, and image quality control. Evaluated on 136,361 real volumes spanning multiple cohorts, NeuroFM generalizes across domains and enables individual-level brain health profiling, estimating future dementia risk years before diagnosis. Together, these findings establish a disease-naïve foundation model paradigm for precision neuroimaging. Code, model, and demo are available on the project website.
+  Precision neuroimaging aims to deliver individualized assessments of brain
+  health, yet a single structural MRI does not yield a multidimensional,
+  quantitative summary of an individual's current health or future risk.
+  NeuroFM is a foundation model trained exclusively on 100,000 healthy
+  synthetic volumes to predict morphometric and demographic targets. Without
+  exposure to diagnostic labels, NeuroFM organizes brain MRIs into
+  population-level patterns that encode meaningful brain health differences,
+  transferring across five neuroscience domains and enabling individual-level
+  brain health profiling, including estimation of future dementia risk years
+  before diagnosis.
 
 keywords:
   - neuroimaging
@@ -48,11 +57,46 @@ keywords:
   - brain age
   - MRI
   - deep learning
+  - TensorFlow
 
 preferred-citation:
   type: article
   title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
+  authors:
+    - family-names: Dibble
+      given-names: Austin
+      orcid: http://orcid.org/0009-0008-3963-041X
+      affiliation: University of Glasgow
+    - family-names: Dalby
+      given-names: Connor
+      orcid: http://orcid.org/0009-0005-5705-061X
+      affiliation: University of Glasgow
+    - family-names: Sevegnani
+      given-names: Michele
+      orcid: http://orcid.org/0000-0001-6773-9481
+      affiliation: University of Glasgow
+    - family-names: Fracasso
+      given-names: Alessio
+      orcid: http://orcid.org/0000-0002-4542-112X
+      affiliation: University of Glasgow
+    - family-names: Lyall
+      given-names: Donald M
+      orcid: http://orcid.org/0000-0003-3850-1487
+      affiliation: University of Glasgow
+    - family-names: Harvey
+      given-names: Monika
+      orcid: http://orcid.org/0000-0003-1694-1174
+      affiliation: University of Glasgow
+    - family-names: Svanera
+      given-names: Michele
+      orcid: http://orcid.org/0000-0002-7828-9209
+      affiliation: University of Glasgow
   journal: "medRxiv"
   year: 2026
-  doi: "10.64898/2026.03.27.26349489v1"
-  url: "https://doi.org/10.64898/2026.03.27.26349489v1"
+  doi: "10.64898/2026.03.27.26349489"
+  url: "https://www.medrxiv.org/content/early/2026/03/31/2026.03.27.26349489"
+
+identifiers:
+  - type: doi
+    value: "10.64898/2026.03.27.26349489"
+    description: "medRxiv preprint"
