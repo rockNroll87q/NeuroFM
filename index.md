@@ -5,7 +5,7 @@ title: <a href="https://rocknroll87q.github.io/NeuroFM">NeuroFM</a>
 
 # Abstract
 
-Precision neuroimaging aims to deliver individualized assessments of brain health, yet a single structural MRI does not yield a multidimensional, quantitative summary of an individual’s current health or future risk. Existing approaches optimize task-specific objectives, yielding representations entangled with cohort- or disease-specific signals rather than capturing biologically grounded patterns of brain health. Here, we introduce NeuroFM, a foundation model trained exclusively on 100,000 healthy synthetic volumes to predict morphometric and demographic targets. Without exposure to diagnostic labels, NeuroFM organizes brain MRIs into population-level patterns that encode meaningful brain health differences. These representations transfer across five neuroscience domains without adaptation and support simple linear readouts for clinical, cognitive, developmental, socio-behavioural, and image quality control. Evaluated on 136,361 real volumes spanning multiple cohorts, NeuroFM generalizes across domains and enables individual-level brain health profiling, estimating future dementia risk years before diagnosis. Together, these findings establish a disease-naïve foundation model paradigm for precision neuroimaging. Code, model, and demo are available on the [project website](https://rocknroll87q.github.io/NeuroFM/).
+Precision neuroimaging aims to deliver individualized assessments of brain health, yet a single structural MRI does not provide a scalable, multidimensional, quantitative summary of an individual’s current or future health. Existing approaches optimize task-specific objectives, yielding representations entangled with cohort- or disease-specific signals rather than capturing biologically grounded anatomical patterns.Here, we introduce NeuroFM, a foundation model trained exclusively on 100,000 healthy synthetic volumes to predict morphometric and demographic targets. Without exposure to disease-labelled data, NeuroFM organizes brain structure into population-level patterns encoding brain health differences. These representations transfer across neuroscience domains without adaptation and support simple linear readouts for clinical, cognitive, developmental, socio-behavioural, and image quality. Evaluated on 136,361 multi-cohort volumes, NeuroFM generalizes across domains and enables individual-level brain health profiling, estimating future dementia risk years before diagnosis. Together, these findings establish a disease-naïve foundation model for precision neuroimaging with potential to support quantitative brain health assessments across settings. Code, model, and demo are available on the [project website](https://rocknroll87q.github.io/NeuroFM/).
 
 <p align="center">
 <img src="./misc/Fig1 - v0.11.png" width="80%" />  
@@ -30,18 +30,19 @@ Visit the relative [page](https://rocknroll87q.github.io/LOD-Brain/usage) to lea
 
 If you find this work useful, please consider citing our paper:
 
-```
-@article{SVANERA2024103090,
-	title = {TODO},
-	journal = {TODO},
-	volume = {TODO},
-	pages = {TODO},
+```bibtex
+@article {DibbleNeuroFM2026,
+	author = {Dibble, Austin and Dalby, Connor and Sevegnani, Michele and Fracasso, Alessio and Lyall, Donald M and Harvey, Monika and Svanera, Michele},
+	title = {NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation},
+	elocation-id = {2026.03.27.26349489},
 	year = {2026},
-	issn = {TODO},
-	doi = {TODO},
-	url = {TODO},
-	author = {Austin Dibble and Connor Dalby and Michele Sevegnani and Alessio Fracasso and Donald Lyall and Monika Harvey and Michele Svanera},
-	keywords = {TODO},
+	doi = {10.64898/2026.03.27.26349489},
+	publisher = {Cold Spring Harbor Laboratory Press},
+	abstract = {Precision neuroimaging aims to deliver individualized assessments of brain health, yet a single structural MRI does not yield a multidimensional, quantitative summary of an individual{\textquoteright}s current health or future risk. Existing approaches optimize task-specific objectives, yielding representations entangled with cohort- or disease-specific signals rather than capturing biologically grounded patterns of anatomical variation. Here, we introduce NeuroFM, a foundation model trained exclusively on 100,000 healthy synthetic volumes to predict morphometric and demographic targets. Without exposure to diagnostic labels, NeuroFM organizes brain MRIs into population-level patterns that encode meaningful brain health differences. These representations transfer across five neuroscience domains without adaptation and support simple linear readouts for clinical, cognitive, developmental, socio-behavioural, and image quality control. Evaluated on 136,361 real volumes spanning multiple cohorts, NeuroFM generalizes across domains and enables individual-level brain health profiling, estimating future dementia risk years before diagnosis. Together, these findings establish a disease-naive foundation model paradigm for precision neuroimaging. Code available at: https://rocknroll87q.github.io/NeuroFM/},
+	URL = {https://www.medrxiv.org/content/early/2026/03/31/2026.03.27.26349489},
+	eprint = {https://www.medrxiv.org/content/early/2026/03/31/2026.03.27.26349489.full.pdf},
+	journal = {medRxiv}
+}
 ```
 
 
