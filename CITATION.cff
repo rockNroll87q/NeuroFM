@@ -1,31 +1,46 @@
 cff-version: 1.2.0
 title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
-message: "If you use this software, please cite it using the metadata below."
+message: "If you use this software, please cite the associated paper."
 type: software
-license: # TODO: e.g. MIT, Apache-2.0, CC-BY-4.0
+
+authors:
+  - family-names: "Dibble"
+    given-names: "Austin"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Dalby"
+    given-names: "Connor"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Sevegnani"
+    given-names: "Michele"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Fracasso"
+    given-names: "Alessio"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Lyall"
+    given-names: "Donald M"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Harvey"
+    given-names: "Monika"
+    affiliation: "University of Glasgow"
+
+  - family-names: "Svanera"
+    given-names: "Michele"
+    affiliation: "University of Glasgow"
 
 repository-code: "https://github.com/rockNroll87q/NeuroFM"
 
-version: "0.1.0"
-date-released: # TODO: "YYYY-MM-DD"
+version: "v1.0.0"
+date-released: 2026-03-31
 
-authors:
-  - family-names: # TODO
-    given-names: # TODO
-    orcid: # TODO: "https://orcid.org/0000-0000-0000-0000"
-    affiliation: # TODO
-  - family-names: # TODO
-    given-names: # TODO
-    orcid: # TODO
-    affiliation: # TODO
-  # Add further authors as needed
+license: "CC-BY-NC-SA-4.0"
 
 abstract: >
-  NeuroFM is a lightweight foundation model for individualized brain health
-  estimation from T1-weighted MRI. Despite containing fewer than 11 million
-  parameters, NeuroFM achieves state-of-the-art performance on brain age
-  prediction, brain volume estimation, lateral ventricle volume estimation,
-  and sex classification from a single scan.
+  Precision neuroimaging aims to deliver individualized assessments of brain health, yet a single structural MRI does not yield a multidimensional, quantitative summary of an individual’s current health or future risk. Existing approaches optimize task-specific objectives, yielding representations entangled with cohort- or disease-specific signals rather than capturing biologically grounded patterns of brain health. Here, we introduce NeuroFM, a foundation model trained exclusively on 100,000 healthy synthetic volumes to predict morphometric and demographic targets. Without exposure to diagnostic labels, NeuroFM organizes brain MRIs into population-level patterns that encode meaningful brain health differences. These representations transfer across five neuroscience domains without adaptation and support simple linear readouts for clinical, cognitive, developmental, socio-behavioural, and image quality control. Evaluated on 136,361 real volumes spanning multiple cohorts, NeuroFM generalizes across domains and enables individual-level brain health profiling, estimating future dementia risk years before diagnosis. Together, these findings establish a disease-naïve foundation model paradigm for precision neuroimaging. Code, model, and demo are available on the project website.
 
 keywords:
   - neuroimaging
@@ -33,26 +48,11 @@ keywords:
   - brain age
   - MRI
   - deep learning
-  - TensorFlow
 
 preferred-citation:
   type: article
   title: "NeuroFM: Toward Precision Neuroimaging with Foundation Models for Individualized Brain Health Estimation"
-  authors:
-    - family-names: # TODO
-      given-names: # TODO
-      orcid: # TODO
-      affiliation: # TODO
-    - family-names: # TODO
-      given-names: # TODO
-      orcid: # TODO
-      affiliation: # TODO
-  journal: "bioRxiv"
+  journal: "medRxiv"
   year: 2026
-  doi: # TODO: "10.1101/XXXXXX"
-  url: # TODO: "https://doi.org/10.1101/XXXXXX"
-
-identifiers:
-  - type: doi
-    value: # TODO: "10.1101/XXXXXX"  (bioRxiv preprint DOI)
-    description: "bioRxiv preprint"
+  doi: "10.64898/2026.03.27.26349489v1"
+  url: "https://doi.org/10.64898/2026.03.27.26349489v1"
