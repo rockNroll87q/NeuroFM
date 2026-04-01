@@ -43,7 +43,7 @@ python scripts/run_inference.py \
 ```python
 from neurofm import NeuroFM
 
-model = NeuroFM(model="neurofm-s", device="auto")
+model = NeuroFM(variant="neurofm-s", device="auto")
 results = model.predict("subject_01_T1w.nii.gz", outputs=["brain_health", "latent"])
 
 results["brain_health"]  # np.ndarray, shape (4,) - [brain_age, brain_vol, ventricle_vol, sex]
