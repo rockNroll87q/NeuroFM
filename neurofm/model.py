@@ -17,6 +17,8 @@ pretrained weights.
 """
 from typing import Dict, List, Literal, Tuple
 
+import h5py
+import numpy as np
 import tensorflow as tf
 from loguru import logger
 from pydantic import BaseModel
@@ -85,7 +87,7 @@ class NetworkConfig(BaseModel):
 
     # Output head
     num_classes: List[int] = [1, 2, 1, 1]       # one per predicted variable
-    predicted_variable: List[str] = BRAIN_HEALTH_KEYS
+    predicted_variable: List[str] = _BRAIN_HEALTH_INTERNAL
     dense_predictors: bool = False
     num_dense_predictor_layers: int = 1
     dense_predictor_size: int = 128
@@ -156,6 +158,11 @@ def get_custom_objects() -> dict:
 # Model loading
 # ---------------------------------------------------------------------------
 
+class _BuildToken:
+    """Proof that build_and_load cleared the session and built the model.
+    Not instantiable from outside this module."""
+    pass
+
 def load_neurofm(weights_path: str, variant: str) -> Model:
     """
     Load a pretrained NeuroFM model from an .h5 weights file.
@@ -184,10 +191,18 @@ def load_neurofm(weights_path: str, variant: str) -> Model:
 
     config = VARIANT_CONFIGS[variant]
     logger.info(f"Building {variant} architecture...")
+    
+    # Not ideal, but we need this to clear internal counters from keras, so that
+    # constructed model weight names match the loaded weights files.
+    # Below, _strict_load_weights is kept internal, and requires a token to use.
+    tf.keras.backend.clear_session()
     model = build_model(config)
 
     logger.info(f"Loading weights from {weights_path}...")
-    model.load_weights(weights_path, by_name=True)
+    # model.load_weights(weights_path, by_name=True)
+    
+    # Load, but take care that the model weights match the expected structure exactly.
+    model = _strict_load_weights(model, weights_path, _BuildToken(), verbose=True)
 
     logger.info(f"Model ready - {_count_params(model):,} parameters.")
     return model
@@ -217,7 +232,8 @@ def build_model(config: NetworkConfig) -> Model:
     Returns
     -------
     tf.keras.Model
-    """
+    """    
+    
     input_shape = (*config.shape, 1)
 
     with tf.name_scope("Input"):
@@ -358,12 +374,152 @@ def _build_output_layers(config: NetworkConfig, x):
                     x = Dropout(0.5, name=f"dropout_dense_pred_{var_name}_{d}")(x)
 
             last_activation = "linear" if n_classes == 1 else "softmax"
-            x = Dense(n_classes)(x)
+            x = Dense(n_classes, name="dense" if idx == 0 else f"dense_{idx}")(x)
             # Force float32 output - avoids errors with mixed precision training
             x = Activation(last_activation, dtype="float32", name=var_name)(x)
             output_layers.append(x)
 
     return output_layers
+
+def get_h5_weight_info(h5_path):
+    """Extract layer names and their weight dataset paths from the h5 file."""
+    layer_weights = {}  # layer_name -> list of weight dataset paths
+
+    def visitor(name, obj):
+        if isinstance(obj, h5py.Dataset):
+            # Top-level key is the layer name
+            top_level = name.split('/')[0]
+            if top_level not in layer_weights:
+                layer_weights[top_level] = []
+            layer_weights[top_level].append(name)
+
+    with h5py.File(h5_path, 'r') as f:
+        f.visititems(visitor)
+
+    return layer_weights
+
+
+def get_model_weight_info(model):
+    """Extract layer names and their weight names from the model."""
+    layer_weights = {}
+    for layer in model.layers:
+        weights = layer.weights
+        if weights:
+            layer_weights[layer.name] = [w.name for w in weights]
+    return layer_weights
+
+
+
+# ---------------------------------------------------------------------------
+# Strict loading utility
+# ---------------------------------------------------------------------------
+def _strict_load_weights(model, h5_path, token, verbose=True):
+    """
+    Load weights with strict name matching validation.
+    Raises ValueError if any mismatch is detected before loading.
+    Optionally verifies a sample of weights after loading.
+    """
+    if not isinstance(token, _BuildToken):
+        raise RuntimeError(
+            "Call load_neurofm() instead of _strict_load_weights() directly."
+        )
+    
+    h5_info = get_h5_weight_info(h5_path)
+    model_info = get_model_weight_info(model)
+
+    h5_layers = set(h5_info.keys())
+    model_layers = set(model_info.keys())
+
+    # Layers that have weights in h5 but no matching layer in model
+    missing_from_model = h5_layers - model_layers
+    # Layers that have weights in model but no matching entry in h5
+    missing_from_h5 = model_layers - h5_layers
+
+    # These are expected to be in h5 but have no weights (structural groups)
+    # We only care about entries that actually contain datasets
+    # (already filtered by visitor above, so missing_from_model is real)
+
+    errors = []
+    
+    if missing_from_model:
+        errors.append(
+            f"  Layers in .h5 with weights but NOT in model ({len(missing_from_model)}):\n"
+            + "\n".join(f"    - {layer}" for layer in sorted(missing_from_model))
+        )
+
+    if missing_from_h5:
+        errors.append(
+            f"  Layers in model with weights but NOT in .h5 ({len(missing_from_h5)}):\n"
+            + "\n".join(f"    - {layer}" for layer in sorted(missing_from_h5))
+        )
+
+    if errors:
+        raise ValueError(
+            "Weight name mismatch - weights will NOT be loaded:\n"
+            + "\n".join(errors)
+        )
+
+    if verbose:
+        logger.debug(f"Layer name check passed: {len(h5_layers & model_layers)} layers matched.")
+
+    model.load_weights(h5_path, by_name=True)
+
+    # Post-load verification: spot-check one weight tensor per layer
+    if verbose:
+        logger.debug("Verifying loaded weights...")
+
+    failed = []
+    with h5py.File(h5_path, 'r') as f:
+        for layer_name, dataset_paths in h5_info.items():
+            if not dataset_paths:
+                continue
+
+            sample_path = dataset_paths[0]
+            stored = f[sample_path][:]
+
+            try:
+                layer = model.get_layer(layer_name)
+            except ValueError:
+                failed.append((layer_name, "layer not found in model"))
+                continue
+
+            # Use the full relative path within the layer, not just the leaf name.
+            # e.g. 'enc_conv_1_1/batch_normalization_3/beta:0'
+            #   -> 'batch_normalization_3/beta:0'
+            # This disambiguates layers with multiple weights of the same type.
+            rel_path = '/'.join(sample_path.split('/')[1:])
+
+            matched_weight = next(
+                (w for w in layer.weights if w.name.endswith(rel_path)),
+                None
+            )
+
+            if matched_weight is None:
+                # Fall back to leaf name match for simple (non-custom) layers
+                leaf_name = sample_path.split('/')[-1]
+                matched_weight = next(
+                    (w for w in layer.weights if w.name.endswith(leaf_name)),
+                    None
+                )
+
+            if matched_weight is None:
+                failed.append((layer_name, f"could not find weight matching '{rel_path}'"))
+                continue
+
+            loaded = matched_weight.numpy()
+            if not np.allclose(stored, loaded, atol=1e-6):
+                failed.append((layer_name, f"values differ for '{rel_path}'"))
+
+    if failed:
+        raise ValueError(
+            "Post-load weight verification FAILED for:\n"
+            + "\n".join(f"  - {layer}: {reason}" for layer, reason in failed)
+        )
+
+    if verbose:
+        logger.debug(f"Post-load verification passed for all {len(h5_info)} layers.")
+
+    return model
 
 
 # ---------------------------------------------------------------------------
