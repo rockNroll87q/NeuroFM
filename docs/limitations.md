@@ -13,7 +13,12 @@ Some limitations of our work and models:
   interpreted as a direct measure of neurological health in individuals.
 - Sex classification reflects biological sex as recorded in dataset metadata
   and is a binary prediction. It does not reflect gender identity.
-
+- **This model is intended for research use only and has not been validated for 
+  clinical decision-making.** NeuroFM outputs should not be used to inform 
+  diagnosis, treatment, or any clinical decision affecting individual patient care. 
+  The authors and the University of Glasgow accept no liability for consequences 
+  arising from unsupported clinical use.
+  
 ---
 
 *For more information, see the [main README](../README.md) or open an issue on [GitHub](https://github.com/rockNroll87q/NeuroFM/issues).*

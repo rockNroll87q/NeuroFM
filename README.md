@@ -101,7 +101,7 @@ For troubleshooting, see the [troubleshooting guide](docs/troubleshooting.md).
 
 ## Limitations and bias
 
-To understand limitations of our models, see [limitations](docs/limitations.md).
+To understand limitations of our models and relevant disclaimers, see [limitations](docs/limitations.md) before using.
 
 
 ## Citation
