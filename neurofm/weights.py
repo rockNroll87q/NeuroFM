@@ -17,10 +17,11 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from huggingface_hub import hf_hub_download
+from huggingface_hub import errors, hf_hub_download
+from huggingface_hub.file_download import repo_folder_name
 from loguru import logger
 
-HF_REPO_ID = "rocknroll87q/NeuroFM"
+HF_REPO_ID = "NeuroAI-UofG/NeuroFM"
 DEFAULT_CACHE_DIR = os.path.expanduser("~/.cache/NeuroFM")
 DEFAULT_VARIANT = "neurofm-s"
 
@@ -94,20 +95,51 @@ def get_weights_path(
     _validate_variant(variant)
     filename = VARIANTS[variant]["filename"]
 
+    # Show disclaimer on first download of weights
+    # Manual cache check keeps this from re-appearing every time
+    if not _is_cached(HF_REPO_ID, filename, cache_dir):
+        logger.info(
+            "\n  By downloading these weights, you agree to the NeuroFM license:\n"
+            "  CC BY-NC-SA 4.0 — non-commercial use only.\n"
+            "  Full terms: https://creativecommons.org/licenses/by-nc-sa/4.0/\n"
+            "  For detailed information, including limitations and disclaimers,\n"
+            "  see https://huggingface.co/NeuroAI-UofG/NeuroFM before using our models."
+        )
+
     logger.info(
         f"Loading weights for {variant} ({VARIANTS[variant]['params']} params). "
         f"Downloading from HuggingFace if not cached..."
     )
 
-    path = hf_hub_download(
-        repo_id=HF_REPO_ID,
-        filename=filename,
-        cache_dir=cache_dir,
-    )
-
+    try:
+        path = hf_hub_download(
+            repo_id=HF_REPO_ID,
+            filename=filename,
+            cache_dir=cache_dir,
+        )
+    except errors.HfHubHTTPError as e:
+        # This may happen due to network or access errors. shouldn't usually, but this adds more logging
+        logger.error(f'Cannot access the NeuroFM huggingface repository for download: {e}')
+        
     logger.info(f"Weights ready: {path}")
     return path
 
+
+def _is_cached(repo_id: str, filename: str, cache_dir: str) -> bool:
+    """Check if a file is already in the HuggingFace cache."""
+    # HF cache structure: cache_dir/models--org--repo/snapshots/.../filename
+    storage_folder = os.path.join(
+        os.path.expanduser(cache_dir),
+        repo_folder_name(repo_id=repo_id, repo_type="model")
+    )
+    # If the storage folder doesn't exist at all, definitely not cached
+    if not os.path.exists(storage_folder):
+        return False
+    # Walk snapshots looking for the file
+    snapshots = os.path.join(storage_folder, "snapshots")
+    if not os.path.exists(snapshots):
+        return False
+    return any(filename in files for root, dirs, files in os.walk(snapshots))
 
 def _validate_variant(variant: str) -> None:
     """Ensure the selected variant exists"""
