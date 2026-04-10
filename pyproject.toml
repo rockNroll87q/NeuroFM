@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neurofm"
-version = "1.0.2"
+version = "1.0.3"
 description = "Foundation model for individualized brain health estimation from T1w MRI."
 readme = "README.md"
 license = { file = "LICENSE" }
