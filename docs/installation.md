@@ -40,12 +40,16 @@ docker run --rm -v /path/to/data:/data -p 8888:8888 rocknroll87q/neurofm
 
 Open browser to `http://localhost:8888`.
 
+**Note**: Our Docker container does not contain the trained NeuroFM weights files. We recommend you authenticate with HuggingFace and downlaod the weights files separately using the HuggingFace website or CLI, then mount the weight files to your container. Weight file paths can be specified using the `--weights` argument in `scripts/run_inference.py` or via the `weights` parameter in the NeuroFM class if you're using the API. See [usage](./usage.md) for more details.
+
 ### Option 4: Singularity *(for HPC/cluster environments)*
 ```bash
 singularity pull neurofm.sif docker://rocknroll87q/neurofm:latest
 singularity run --bind /path/to/data:/data neurofm.sif \
     --input /data/scan.nii.gz --output /data/output/
 ```
+
+**Note**: The same weights files caveat given for the Docker container method also applies to Singularity. See above.
 
 ---
 
