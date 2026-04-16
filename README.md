@@ -103,6 +103,9 @@ For troubleshooting, see the [troubleshooting guide](docs/troubleshooting.md).
 
 To understand limitations of our models and relevant disclaimers, see [limitations](docs/limitations.md) before using.
 
+## Training or finetuning
+
+Please see our training repository [NeuroFM-training](https://github.com/rockNroll87q/NeuroFM-training) for more information.
 
 ## Citation
 
