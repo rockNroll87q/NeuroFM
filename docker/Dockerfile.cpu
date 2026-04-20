@@ -49,12 +49,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN pip install --no-cache-dir .
 
-# Weights are downloaded at runtime and cached inside the container.
-# To persist the cache across runs, mount a volume:
-#   docker run --rm \
-#       -v /path/to/data:/data \
-#       -v neurofm-weights:/root/.cache/NeuroFM \
-#       rocknroll87q/neurofm:cpu --input /data/scan.nii.gz --output /data/results/
 ENV NEUROFM_CACHE_DIR=/root/.cache/NeuroFM
 
 # Default entrypoint runs the inference script in CPU mode.
