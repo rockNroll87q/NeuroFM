@@ -1,7 +1,7 @@
 {
     "name": "NeuroFM",
     "build": {
-        "dockerfile": "docker/Dockerfile.cpu", // remove .cpu when using the gpu container
+        "dockerfile": "../docker/Dockerfile.cpu", // remove .cpu when using the gpu container
         "context": ".."
     },
 
