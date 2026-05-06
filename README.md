@@ -105,7 +105,7 @@ To understand limitations of our models and relevant disclaimers, see [limitatio
 
 ## Training or finetuning
 
-Please see our training repository [NeuroFM-training](https://github.com/rockNroll87q/NeuroFM-training) for more information.
+Currently unsupported in this repository, but may be added at a later time. 
 
 ## Citation
 
