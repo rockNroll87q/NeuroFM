@@ -1,5 +1,9 @@
 # NeuroFM - User-facing inference container
 #
+# NOTE: This container is intended for Linux (x86_64) only.
+# tensorflow:2.13.0 uses AVX2/AVX-512 instructions that are not fully
+# emulated by Rosetta 2 on Apple Silicon - running this container on Mac
+# will crash with "Illegal Instruction" at TF runtime.
 # Usage:
 #   docker pull rocknroll87q/neurofm:latest
 #
@@ -42,12 +46,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN pip install --no-cache-dir .
 
-# Weights are downloaded at runtime and cached inside the container.
-# To persist the cache across runs, mount a volume:
-#   docker run --rm \
-#       -v /path/to/data:/data \
-#       -v neurofm-weights:/root/.cache/NeuroFM \
-#       rocknroll87q/neurofm --input /data/scan.nii.gz --output /data/results/
 ENV NEUROFM_CACHE_DIR=/root/.cache/NeuroFM
 
 # Default entrypoint runs the inference script.

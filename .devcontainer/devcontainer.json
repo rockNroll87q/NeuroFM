@@ -1,11 +1,11 @@
 {
     "name": "NeuroFM",
     "build": {
-        "dockerfile": "Dockerfile.cpu", // remove .cpu when using the gpu container
+        "dockerfile": "../docker/Dockerfile.cpu", // remove .cpu when using the gpu container
         "context": ".."
     },
 
-    // GPU passthrough disabled for CPU development (Mac).
+    // GPU passthrough disabled for CPU development.
     // When switching to Linux with GPU, restore:
     //   "hostRequirements": { "gpu": "optional" },
     //   "runArgs": ["--gpus", "all"],
